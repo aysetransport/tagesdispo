@@ -1198,7 +1198,7 @@ function renderKunden() {
     <td class="k-adr">${escH(k.adresse)}</td><td class="small k-tel">${k.tel ? `<a href="tel:${escH(k.tel.replace(/[^\d+]/g, ''))}">${escH(k.tel)}</a>` : ''}</td><td class="small k-auf">${escH(k.auftrag)}</td>
     <td class="num k-et">${k.etage || 0}</td><td class="num k-ent">${k.entsorgung || 0}</td>
     <td class="num k-preis">${preisZelle(k)}</td>
-    <td class="k-stat"><span class="pill">${escH(k.status)}</span></td>
+    <td class="k-stat"><span class="pill">${escH(k.status)}</span>${GAS && !k.intern ? ` <button class="b" style="padding:2px 8px;font-size:12px" data-druck="${k.id}" title="Rechnung (2×) + Spediformular als PDF – vorhandene Rechnung mit gleicher Nummer, sonst nächste freie">🖨 Rechnung</button>` : ''}</td>
     <td class="muted small k-notiz" style="max-width:260px">${escH(k.notiz)}</td>
     <td class="k-akt" style="white-space:nowrap"><button class="i" title="Zur Tagestour hinzufügen" data-add="${k.id}">➕</button><button class="i" title="Bearbeiten" data-edit="${k.id}">✎</button><button class="i" title="Löschen" data-del="${k.id}">🗑</button></td></tr>`).join('');
   $('#kInfo').textContent = `${list.length} von ${S.kunden.length} Kunden` + (list.length > MAX ? ` – die ersten ${MAX} werden angezeigt, Suche oder Filter eingrenzen.` : '');
@@ -1208,12 +1208,36 @@ function renderKunden() {
 $('#kTab').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.edit) openKunde(b.dataset.edit);
+  if (b.dataset.druck) rechnungDrucken(kundeById(b.dataset.druck), b);
   if (b.dataset.add) { const k = kundeById(b.dataset.add); if (inTour(k.id)) return toast('Ist schon in der Tour'); addToTour(k); toast('Zur Tagestour hinzugefügt'); }
   if (b.dataset.del) {
     const k = kundeById(b.dataset.del);
     if (confirm(`Kunde „${k.name}“ wirklich aus der Datenbank löschen?`)) { S.kunden = S.kunden.filter(x => x !== k); save(); renderKunden(); }
   }
 };
+// Einzelrechnung als PDF: Nummer + Daten vom Server (vorhandene Rechnung oder nächste freie), Word bauen, Server wandelt in PDF
+async function rechnungDrucken(k, btn) {
+  let km = k.dist != null && k.distVon === kmVon(k) ? extraKm(k.dist) : null;
+  if (km == null && k.adresse) { try { km = extraKm(await strecke(k.adresse, kmVon(k))); } catch (e) { return alert('Kilometer nicht berechenbar: ' + e.message); } }
+  const vorhanden = S.archiv.some(t => (t.kunden || []).some(a => a.kundeId === k.id && !a.intern));
+  // Kunden-PIN kennt das Archiv nicht -> immer fragen
+  const frage = NUR_KUNDEN ? `Rechnung für ${k.name} drucken? Gibt es noch keine, wird die nächste freie Rechnungsnummer vergeben.`
+    : vorhanden ? '' : `Für ${k.name} gibt es noch keine Rechnung. Neue Rechnung mit der nächsten freien Nummer erstellen?`;
+  if (frage && !confirm(frage)) return;
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const r = await gas('rechnungKunde', k.id, km || 0);
+    const d = await Dispo.buildDocx(JSZip, b64(r.rechnung), b64(r.spedi), { datum: r.datum, start_nr: r.start_nr, filiale: r.filiale, preise: r.preise, kunden: [r.kunde] });
+    let bin = ''; for (let i = 0; i < d.bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, d.bytes.subarray(i, i + 0x8000));
+    const pdf = b64(await gas('alsPdf', btoa(bin)));
+    const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' })), a = document.createElement('a');
+    a.href = url; a.download = `Rechnung_${r.start_nr}_${k.name.replace(/[^\wäöüÄÖÜß-]+/g, '_')}.pdf`; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+    toast(r.neu ? `Neue Rechnung Nr. ${r.start_nr} erstellt` : `Vorhandene Rechnung Nr. ${r.start_nr} erneut ausgegeben`, 6000);
+    if (r.neu) { await serverLaden(); alles(); } // Archiv/letzte Nummer vom Server übernehmen
+  } catch (e) { alert('Rechnung konnte nicht erstellt werden: ' + (e.message || e)); }
+  finally { btn.disabled = false; btn.textContent = '🖨 Rechnung'; }
+}
 const dlLabel = k => `${k.name} · ${k.adresse || ''}${k.lieferdatum ? ' · ' + isoToDe(k.lieferdatum) : ''}${k.auftrag ? ' · ' + k.auftrag : ''}`;
 function fillDatalist() { $('#kundenListe').innerHTML = S.kunden.map(k => `<option value="${escH(dlLabel(k))}">`).join(''); }
 
@@ -1785,7 +1809,7 @@ $('#mExport').onclick = async () => {
 function renderArchiv() {
   $('#mMonat').onchange();
   $('#aTab tbody').innerHTML = S.archiv.map((t, i) => `<tr>
-    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}${t.fahrzeug ? ` · Fz ${t.fahrzeug}` : ''}</td><td data-l="Rechnungen">${t.first}–${t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
+    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}${t.fahrzeug ? ` · Fz ${t.fahrzeug}` : ''}${t.einzeln ? ' · Einzelrechnung' : ''}</td><td data-l="Rechnungen">${t.first}–${t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
     <td class="muted small a-kunden">${t.kunden.map(k => escH(k.name)).join(', ')}</td>
     <td class="a-akt" style="white-space:nowrap"><button class="b" data-dl="${i}">Dateien erneut erzeugen</button> <button class="b" data-copy="${i}">Als neue Tour laden</button></td></tr>`).join('');
   $('#aLeer').hidden = S.archiv.length > 0; $('#aTab').hidden = !S.archiv.length;
