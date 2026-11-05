@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="de">
 <head>
-<script>window.API_URL = "https://script.google.com/macros/s/AKfycbys9otpu_MsFtIIzrDyy-VsHs-qb2DlNzyMXvK_OTwNMgu_hGtXf-8cSDjV_aOGxyeB/exec";</script>
+<script>window.API_URL = "https://script.google.com/macros/s/AKfycbys9otpu_MsFtIIzrDyy-VsHs-qb2DlNzyMXvK_OTwNMgu_hGtXf-8cSDjV_aOGxyeB/exec";
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#A3352B">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
@@ -61,6 +62,7 @@ td.num,th.num{text-align:right}
 .tot{font-weight:650;white-space:nowrap}
 .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);white-space:nowrap}
 .pill.ok{color:var(--ok)} .pill.warn{color:var(--warn)} .pill.acc{color:var(--accent)}
+.pill.fest{background:#c62828;color:#fff;font-weight:700} tr.fest>td{background:rgba(198,40,40,.10)} tr.fest>td:first-child{box-shadow:inset 4px 0 #c62828}
 .sum{display:flex;gap:24px;align-items:center;justify-content:flex-end;padding-top:12px;flex-wrap:wrap}
 .sum b{font-size:20px}
 .banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--soft);margin-top:12px}
@@ -79,7 +81,7 @@ tr.done td{opacity:.6}
 details.preis summary{cursor:pointer;list-style:none;text-decoration:underline dotted;text-underline-offset:3px}
 details.preis summary::-webkit-details-marker{display:none}
 details.preis div{margin-top:4px;text-align:right}
-body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-child,body.nurKunden #dKundeTour{display:none}
+body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-child,body.nurKunden #dKundeTour,body.nurKunden #lFest{display:none}
 @media (max-width:700px){main{padding:12px 12px 80px}.grid2,.grid4{grid-template-columns:1fr}header{padding:10px 12px}}
 #kTab td.k-preis{white-space:nowrap}
 #kTab td.k-tel a{color:inherit}
@@ -165,6 +167,7 @@ body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-c
 <!-- ================= TAGESTOUR ================= -->
 <section id="tour">
   <div class="card">
+    <div class="row" id="tFz" style="margin-bottom:10px"></div>
     <div class="row">
       <label>Lieferdatum der Tour<input type="date" id="tDatum"></label>
       <label>Filiale<select id="tFiliale"></select></label>
@@ -195,6 +198,7 @@ body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-c
     <div class="banner" id="ablage" hidden><span>In Google Drive abgelegt (Ordner „Tagesdispo/Erzeugte Dateien“):</span></div>
     <div class="sum">
       <button class="b p" id="tRoute" title="Reihenfolge nach Fahrzeit und Zeitfenstern optimieren: Start Filiale, Ende Zieladresse">Route optimieren</button>
+      <button class="b p" id="tVerteilen" title="Alle Aufträge beider Fahrzeuge nach Fahrzeit und Zeitfenstern auf Fahrzeug 1 und 2 aufteilen, beide Routen optimiert">Auf 2 Fahrzeuge verteilen</button>
       <button class="b" id="tKmAlle">Kilometer für alle berechnen</button>
       <button class="b" id="tLeeren">Tour leeren</button>
       <span class="muted" id="tInfo"></span>
@@ -326,6 +330,7 @@ body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-c
       <label>Status<select name="status"></select></label>
       <label>Filiale (Ware kommt aus)<select name="filiale"></select></label>
       <label class="check" style="align-self:end"><input type="checkbox" name="intern"> interner Auftrag (keine Rechnung)</label>
+      <label class="check" id="lFest"><input type="checkbox" name="fest"> <b>Fest terminiert</b> (Termin mit Kunde verbindlich)</label>
       <label class="full">Notiz<textarea name="notiz" rows="2"></textarea></label>
     </div>
     <div class="formula" id="kPreis" style="margin-top:12px"></div>
@@ -665,7 +670,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     Z.file('xl/workbook.xml', wb.replace(/\$B\$1:\$H\$\d+/, `$B$1:$H$${lastRow}`));
 
     const bytes = await Z.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
-    return { bytes, filename: `Rollkarte_${FILIALE.replace(/[^\wäöüÄÖÜß-]+/g, '_')}_${data.datum}.xlsx` };
+    return { bytes, filename: `Rollkarte_${FILIALE.replace(/[^\wäöüÄÖÜß-]+/g, '_')}${data.fahrzeug ? '_Fahrzeug' + data.fahrzeug : ''}_${data.datum}.xlsx` };
   }
 
   // ---------- Einfache Liste als Excel (z. B. Monatsliste intern) ----------
@@ -772,7 +777,7 @@ const KEY = 'ssk-tagesdispo-v1';
 const defaults = () => ({
   settings: { filiale: 'Krefeld', starts: {}, frei: 25, rund: 'ceil', letzteNr: 703, preise: { ...Dispo.PREISE },
     ziel: 'Güldenwerth 39, 42857 Remscheid', abfahrt: '10:00', standzeit: 30, ladezeit: 20 },
-  kunden: [], tour: { datum: '', auftraege: [], filiale: '' }, archiv: [], geo: {}
+  kunden: [], tour: { datum: '', auftraege: [], filiale: '' }, tour2: { datum: '', auftraege: [], filiale: '' }, fz: 1, archiv: [], geo: {}
 });
 let S;
 function apply(obj) {
@@ -780,6 +785,7 @@ function apply(obj) {
   S.settings = Object.assign(defaults().settings, S.settings);
   S.settings.preise = Object.assign({ ...Dispo.PREISE }, S.settings.preise);
   S.tour = Object.assign(defaults().tour, S.tour);
+  S.tour2 = Object.assign(defaults().tour, S.tour2); // geparktes zweites Fahrzeug (S.tour ist immer das angezeigte)
   if (!S.kunden.length && !S.notionGeladen && window.KUNDEN_START) { S.kunden = KUNDEN_START.map(k => ({ ...k })); S.notionGeladen = true; save(); }
   // Einmalige Bereinigungen (13.10.2026): Notion-Kunden ohne Lieferdatum entfernen, Abfahrt 10:00 Uhr
   if (!S.migration1) {
@@ -972,6 +978,8 @@ const morgen = () => { const d = new Date(); d.setDate(d.getDate() + 1); return 
 
 // Filiale
 const tourFiliale = () => S.tour.filiale || S.settings.filiale;
+// Auftrag eines Kunden in einem der beiden Fahrzeuge
+const inTour = id => [...S.tour.auftraege, ...S.tour2.auftraege].find(a => a.kundeId === id);
 const startAdresse = (f = tourFiliale()) => S.settings.starts[f] || FILIALEN[f] || FILIALEN.Krefeld;
 function fillFilialen(sel, val) { sel.innerHTML = Object.keys(FILIALEN).map(f => `<option${f === val ? ' selected' : ''}>${escH(f)}</option>`).join(''); }
 
@@ -1023,9 +1031,10 @@ function extraKm(dist) {
 }
 
 // ================= Kunden-Datenbank =================
-const FELDER = ['name', 'adresse', 'tel', 'auftrag', 'lieferdatum', 'zeit', 'etage', 'entsorgung', 'status', 'filiale', 'intern', 'notiz'];
+const FELDER = ['name', 'adresse', 'tel', 'auftrag', 'lieferdatum', 'zeit', 'etage', 'entsorgung', 'status', 'filiale', 'intern', 'fest', 'notiz'];
 // abweichende Filiale eines Kunden ('' = Standard, also die Filiale der Tour)
 const abwFiliale = x => (x.filiale && x.filiale !== tourFiliale() ? x.filiale : '');
+const festPill = k => k && k.fest ? ' <span class="pill fest">📌 FEST TERMINIERT</span>' : '';
 const filialPill = x => abwFiliale(x) ? ` <span class="pill warn" title="Ware kommt aus dieser Filiale">Filiale ${escH(x.filiale)}</span>` : '';
 const kundeById = id => S.kunden.find(k => k.id === id);
 function upsertKunde(d) {
@@ -1049,7 +1058,7 @@ function openKunde(id, mitTour = false, vorgabe = {}) {
   for (const n of FELDER) { const el = fK.elements[n]; if (el.type === 'checkbox') el.checked = !!k[n]; else el.value = k[n] ?? ''; }
   [fK.elements.zeitVon.value, fK.elements.zeitBis.value] = zeitTeile(k.zeit);
   $('#dKundeTitel').textContent = id ? 'Kunde bearbeiten' : 'Neuer Kunde';
-  const a = id && S.tour.auftraege.find(a => a.kundeId === id);
+  const a = id && inTour(id);
   kLive = { km: a && a.km != null ? +a.km : (k.dist != null && k.distVon === kmVon(k) ? extraKm(k.dist) : null), status: '' };
   if (kLive.km == null) kLiveKm(); else kPreis();
   $('#dKunde').showModal();
@@ -1119,7 +1128,7 @@ fK.addEventListener('submit', e => { // direkt auf das Absenden reagieren (zuver
   if (alteAdresse !== null && alteAdresse !== k.adresse) k.dist = null; // Adresse geändert -> Entfernung neu berechnen
   if (d.dist != null) { k.dist = d.dist; k.distVon = d.distVon; }
   // laufende Tour mitpflegen
-  const a = S.tour.auftraege.find(a => a.kundeId === k.id);
+  const a = inTour(k.id);
   if (a) {
     const alt = kmVon(a);
     for (const f of ['name', 'adresse', 'tel', 'auftrag', 'zeit', 'etage', 'entsorgung', 'intern', 'filiale']) a[f] = k[f];
@@ -1147,7 +1156,7 @@ function kundenGefiltert() {
 // Preis wie in der Tour: km aus der laufenden Tour, sonst aus der gespeicherten Fahrstrecke; fehlende Strecken rechnet kmNachrechnen nach
 function preisZelle(k) {
   if (k.intern) return '<span class="muted" title="Interner Auftrag – keine Rechnung">–</span>';
-  const a = S.tour.auftraege.find(a => a.kundeId === k.id);
+  const a = inTour(k.id);
   const km = a ? +a.km || 0 : k.dist != null && k.distVon === kmVon(k) ? extraKm(k.dist) : null;
   if (km == null && k.adresse && !kmFehler.has(k.id)) return '<span class="muted small">rechnet …</span>';
   // Klick auf den Preis klappt die Aufschlüsselung auf
@@ -1163,7 +1172,7 @@ function preisZelle(k) {
 }
 // Fehlende Fahrstrecken der angezeigten Kunden nacheinander berechnen (Geodienste: ca. 1 Anfrage/s)
 const kmFehler = new Map(); let kmLaeuft = false;
-const kmOffen = k => !k.intern && k.adresse && !(k.dist != null && k.distVon === kmVon(k)) && !kmFehler.has(k.id) && !S.tour.auftraege.some(a => a.kundeId === k.id);
+const kmOffen = k => !k.intern && k.adresse && !(k.dist != null && k.distVon === kmVon(k)) && !kmFehler.has(k.id) && !inTour(k.id);
 async function kmNachrechnen() {
   if (kmLaeuft) return; kmLaeuft = true;
   try {
@@ -1180,10 +1189,10 @@ let kOffen = new Set(); // aufgeklappte Preise bleiben beim Neuzeichnen offen
 function renderKunden() {
   const list = kundenGefiltert(), MAX = 400;
   kOffen = new Set([...document.querySelectorAll('#kTab details.preis[open]')].map(d => d.dataset.id));
-  $('#kTab tbody').innerHTML = list.slice(0, MAX).map(k => `<tr class="${k.status === 'Abgeschlossen' ? 'done' : ''}">
+  $('#kTab tbody').innerHTML = list.slice(0, MAX).map(k => `<tr class="${k.status === 'Abgeschlossen' ? 'done' : ''}${k.fest ? ' fest' : ''}">
     <td class="k-dat" style="white-space:nowrap">${k.lieferdatum ? isoToDe(k.lieferdatum) : '<span class="muted">–</span>'}</td>
     <td class="small k-zeit">${escH(k.zeit)}</td>
-    <td class="k-name"><b>${escH(k.name)}</b>${k.intern ? ' <span class="pill acc">intern</span>' : ''}${filialPill(k)}</td>
+    <td class="k-name"><b>${escH(k.name)}</b>${k.intern ? ' <span class="pill acc">intern</span>' : ''}${festPill(k)}${filialPill(k)}</td>
     <td class="k-adr">${escH(k.adresse)}</td><td class="small k-tel">${k.tel ? `<a href="tel:${escH(k.tel.replace(/[^\d+]/g, ''))}">${escH(k.tel)}</a>` : ''}</td><td class="small k-auf">${escH(k.auftrag)}</td>
     <td class="num k-et">${k.etage || 0}</td><td class="num k-ent">${k.entsorgung || 0}</td>
     <td class="num k-preis">${preisZelle(k)}</td>
@@ -1197,7 +1206,7 @@ function renderKunden() {
 $('#kTab').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.edit) openKunde(b.dataset.edit);
-  if (b.dataset.add) { const k = kundeById(b.dataset.add); if (S.tour.auftraege.some(a => a.kundeId === k.id)) return toast('Ist schon in der Tour'); addToTour(k); toast('Zur Tagestour hinzugefügt'); }
+  if (b.dataset.add) { const k = kundeById(b.dataset.add); if (inTour(k.id)) return toast('Ist schon in der Tour'); addToTour(k); toast('Zur Tagestour hinzugefügt'); }
   if (b.dataset.del) {
     const k = kundeById(b.dataset.del);
     if (confirm(`Kunde „${k.name}“ wirklich aus der Datenbank löschen?`)) { S.kunden = S.kunden.filter(x => x !== k); save(); renderKunden(); }
@@ -1224,7 +1233,7 @@ $('#tSuche').addEventListener('change', e => {
   const v = e.target.value; if (!v) return;
   const k = S.kunden.find(k => dlLabel(k) === v) || S.kunden.find(k => k.name.toLowerCase() === v.trim().toLowerCase());
   e.target.value = '';
-  if (k) { if (T().auftraege.some(a => a.kundeId === k.id)) return toast('Ist schon in der Tour'); addToTour(k); }
+  if (k) { if (inTour(k.id)) return toast('Ist schon in der Tour'); addToTour(k); }
   else openKunde(null, true, { name: v });
 });
 $('#tNeu').onclick = () => openKunde(null, true);
@@ -1234,11 +1243,17 @@ $('#tFiliale').onchange = e => {
   T().filiale = e.target.value; T().auftraege.forEach(a => { a.dist = null; a._status = ''; }); save(); renderTour();
   toast(`Filiale ${e.target.value} – Kilometer werden neu berechnet`); $('#tKmAlle').click();
 };
-$('#tLeeren').onclick = () => { if (T().auftraege.length && confirm('Alle Aufträge aus der Tour entfernen? (Die Kunden bleiben in der Datenbank.)')) { T().auftraege = []; save(); renderTour(); } };
+$('#tFz').onclick = e => {
+  const b = e.target.closest('[data-fz]'); if (!b || +b.dataset.fz === S.fz) return;
+  [S.tour, S.tour2] = [S.tour2, S.tour]; S.fz = +b.dataset.fz;
+  if (!T().auftraege.length) T().filiale = S.tour2.filiale; // leeres Fahrzeug übernimmt Datum + Filiale
+  if (!T().auftraege.length || !T().datum) T().datum = S.tour2.datum;
+  save(); renderTour();
+};
+$('#tLeeren').onclick = () => { if (T().auftraege.length && confirm('Alle Aufträge aus der Tour entfernen? (Die Kunden bleiben in der Datenbank.)')) { T().auftraege = []; T().abfahrt = null; save(); renderTour(); } };
 
 function kandidaten() {
-  const drin = new Set(T().auftraege.map(a => a.kundeId));
-  return S.kunden.filter(k => k.lieferdatum === T().datum && !drin.has(k.id) && !['Abgelehnt', 'Selbstabholer', 'Abgeschlossen'].includes(k.status));
+  return S.kunden.filter(k => k.lieferdatum === T().datum && !inTour(k.id) && !['Abgelehnt', 'Selbstabholer', 'Abgeschlossen'].includes(k.status));
 }
 $('#tLaden').onclick = () => {
   const K = kandidaten().sort((a, b) => zeitSort(a.zeit) - zeitSort(b.zeit));
@@ -1272,7 +1287,7 @@ function hhmm(h) { const m = Math.round(h * 60); return `${String(Math.floor(m /
 function hatFenster(z) { const f = fenster(z); return !(f[0] === 7 && f[1] === 21); }
 // Vorschlag fürs Avisieren: 3-Stunden-Fenster um die geplante Ankunft, frühestens ab Abfahrt
 function fensterVorschlag(ankunftH) {
-  const s = Math.max(Math.floor(zeitStd(S.settings.abfahrt)), Math.floor(ankunftH) - 1);
+  const s = Math.max(Math.floor(zeitStd(abfahrt())), Math.floor(ankunftH) - 1);
   return `${s}-${s + 3} Uhr`;
 }
 function fenster(z) { // Zeitfenster-Text -> [von, bis] in Stunden; 1–7 ohne führende 0 = nachmittags
@@ -1315,9 +1330,9 @@ function simuliere(order, M, info, abfahrt) {
   fahr += M.dur[pos][z] / 3600; km += M.dist[pos][z] / 1000; t += M.dur[pos][z] / 3600;
   return { kosten: fahr + warten * 0.3 + spaet * 20 + verletzt * 1000, fahr, km, warten, spaet, verletzt, ende: t, stops };
 }
-function optimiere(knoten, M, info, abfahrt) {
+function optimiere(knoten, M, info, abfahrt, exakt = true) {
   const n = knoten.length, sim = o => simuliere(o, M, info, abfahrt);
-  if (n <= 8) { // exakt: alle Reihenfolgen
+  if (exakt && n <= 8) { // exakt: alle Reihenfolgen
     let best = null;
     const perm = (rest, cur) => {
       if (!rest.length) { const r = sim(cur); if (!best || r.kosten < best.r.kosten) best = { o: cur.slice(), r }; return; }
@@ -1342,12 +1357,14 @@ function optimiere(knoten, M, info, abfahrt) {
   }
   return o;
 }
+// Abfahrt dieser Tour: Standard aus den Einstellungen (10:00), außer für die Tour wurde eine spätere Zeit übernommen
+const abfahrt = () => T().abfahrt || S.settings.abfahrt;
 const zeitStd = s => { const [h, m] = String(s || '10:00').split(':'); return +h + (+m || 0) / 60; };
 const filialAdresse = f => S.settings.starts[f] || FILIALEN[f] || f;
 // T().route = { M, idx:{auftragId: Knoten}, pick:{Filiale: Knoten}, seq:[Knoten…] } – zuletzt geplante Tour (wird mitgespeichert)
-function routeInfoDaten(route) { // Zeitfenster/Aufenthalt/Abhängigkeiten aus den aktuellen Auftragsdaten
+function routeInfoDaten(route, A = T().auftraege) { // Zeitfenster/Aufenthalt/Abhängigkeiten aus den aktuellen Auftragsdaten
   const fen = [], stand = [], vor = [], abholung = [];
-  for (const a of T().auftraege) {
+  for (const a of A) {
     const i = route.idx[a.id]; if (!i) continue;
     const f = abwFiliale(a);
     if (f && !route.pick[f]) return null; // neue Abholfiliale -> Route neu planen
@@ -1372,7 +1389,7 @@ async function planeRoute(optimieren) {
   T().route = route;
   const info = routeInfoDaten(route);
   let seq;
-  if (optimieren) seq = optimiere([...ok.map((x, k) => k + 1), ...abhol.map((f, k) => ok.length + k + 1)], M, info, zeitStd(S.settings.abfahrt));
+  if (optimieren) seq = optimiere([...ok.map((x, k) => k + 1), ...abhol.map((f, k) => ok.length + k + 1)], M, info, zeitStd(abfahrt()));
   else seq = abholungEinfuegen(ok.map((x, k) => k + 1), info);
   route.seq = seq;
   const kundeAnKnoten = Object.fromEntries(ok.map((x, k) => [k + 1, x.a]));
@@ -1380,6 +1397,62 @@ async function planeRoute(optimieren) {
   save(); renderTour();
   return fehlt.length;
 }
+// Aufträge beider Fahrzeuge routenoptimiert auf zwei Fahrzeuge verteilen (beide ab Filiale der angezeigten Tour, gleiches Ziel).
+// Ziel: früheste Rückkehr des letzten Fahrzeugs + 0,3 × Gesamtfahrzeit + Strafen (Zeitfenster, Wartezeit, Abholung).
+// shortcut: Startaufteilung nach Himmelsrichtung + Verschieben/Tauschen einzelner Kunden, kein exakter Solver – reicht für ~30 Kunden
+async function verteile() {
+  const A = [...S.tour.auftraege, ...S.tour2.auftraege]; if (A.length < 2) throw new Error('Mindestens 2 Aufträge nötig.');
+  const ok = [], fehlt = [];
+  const start = await geocode(startAdresse()), ziel = await geocode(S.settings.ziel);
+  for (const a of A) {
+    try { if (!/[a-zäöüß]{3}/i.test(a.adresse)) throw 0; ok.push({ a, p: await geocode(a.adresse) }); } catch { fehlt.push(a); }
+  }
+  if (ok.length < 2) throw new Error('Zu wenige Adressen gefunden');
+  const abhol = [...new Set(ok.map(x => abwFiliale(x.a)).filter(Boolean))];
+  const abholPkt = []; for (const f of abhol) abholPkt.push(await geocode(filialAdresse(f)));
+  const M = await matrix([start, ...ok.map(x => x.p), ...abholPkt, ziel]);
+  const idx = Object.fromEntries(ok.map((x, k) => [x.a.id, k + 1])), pick = Object.fromEntries(abhol.map((f, k) => [f, ok.length + k + 1]));
+  const info = routeInfoDaten({ M, idx, pick }, ok.map(x => x.a)), ab = zeitStd(abfahrt());
+  const plane = (kn, exakt) => {
+    if (!kn.length) return { seq: [], r: null };
+    const seq = optimiere([...kn, ...new Set(kn.map(i => info.vor[i]).filter(Boolean))], M, info, ab, exakt);
+    return { seq, r: simuliere(seq, M, info, ab) };
+  };
+  const wert = (g, exakt = false) => {
+    const p = g.map(kn => plane(kn, exakt)), r = p.map(x => x.r).filter(Boolean);
+    return { g, p, w: Math.max(0, ...r.map(x => x.ende - ab)) + r.reduce((s, x) => s + 0.3 * x.fahr + x.kosten - x.fahr, 0) };
+  };
+  // Start: nach Richtung ab Filiale sortieren, in zwei Hälften schneiden – beste Drehung nehmen
+  const winkel = i => Math.atan2(ok[i - 1].p.lat - start.lat, (ok[i - 1].p.lon - start.lon) * Math.cos(start.lat * Math.PI / 180));
+  const rund = ok.map((x, k) => k + 1).sort((a, b) => winkel(a) - winkel(b)), n = rund.length, h = Math.ceil(n / 2);
+  let best = null;
+  for (let d = 0; d < n; d++) { const o = rund.slice(d).concat(rund.slice(0, d)), v = wert([o.slice(0, h), o.slice(h)]); if (!best || v.w < best.w) best = v; }
+  // verbessern: einzelne Kunden verschieben oder tauschen, solange es besser wird
+  for (let besser = true; besser;) {
+    besser = false;
+    const kand = [];
+    for (const x of [0, 1]) for (const i of best.g[x]) kand.push(() => { const g = best.g.map(a => a.slice()); g[x] = g[x].filter(j => j !== i); g[1 - x].push(i); return g; });
+    for (const i of best.g[0]) for (const j of best.g[1]) kand.push(() => [best.g[0].map(k => k === i ? j : k), best.g[1].map(k => k === j ? i : k)]);
+    for (const c of kand) { const v = wert(c()); if (v.w < best.w - 1e-6) { best = v; besser = true; break; } }
+  }
+  const fertig = wert(best.g, true), nach = Object.fromEntries(ok.map((x, k) => [k + 1, x.a]));
+  const touren = fertig.p.map(x => ({ auftraege: x.seq.filter(i => nach[i]).map(i => nach[i]), route: x.seq.length ? { M, idx, pick, seq: x.seq } : null }));
+  touren[0].auftraege.push(...fehlt); // Adresse nicht gefunden -> ans Ende von Fahrzeug 1
+  S.tour2.filiale = S.tour.filiale; S.tour2.datum = S.tour.datum;
+  const [t1, t2] = S.fz === 1 ? [S.tour, S.tour2] : [S.tour2, S.tour];
+  Object.assign(t1, touren[0]); Object.assign(t2, touren[1]);
+  save(); renderTour();
+  return { fehlt: fehlt.length, n: touren.map(t => t.auftraege.length) };
+}
+$('#tVerteilen').onclick = async () => {
+  if (S.tour.auftraege.length + S.tour2.auftraege.length < 2) return toast('Mindestens 2 Aufträge nötig.');
+  const btn = $('#tVerteilen'); btn.disabled = true; btn.textContent = 'Verteile …';
+  try {
+    const v = await verteile();
+    toast(`Verteilt: Fahrzeug 1 mit ${v.n[0]}, Fahrzeug 2 mit ${v.n[1]} Aufträgen${v.fehlt ? ` – ${v.fehlt} Adresse(n) nicht gefunden, bei Fahrzeug 1 ans Ende gesetzt` : ''}`, 6000);
+  } catch (e) { alert('Verteilung fehlgeschlagen: ' + e.message); }
+  finally { btn.disabled = false; btn.textContent = 'Auf 2 Fahrzeuge verteilen'; }
+};
 // Kundenreihenfolge -> Knotenfolge, Abholung jeweils direkt vor dem ersten Kunden dieser Filiale
 function abholungEinfuegen(kundenKnoten, info) {
   const seq = [], drin = new Set();
@@ -1400,7 +1473,7 @@ function routeText(plan) {
   if (!plan || !plan._r) return '';
   const r = plan._r, n = r.stops.filter(s => s.spaet && !plan._abholKnoten[s.i]).length;
   const ab = plan._abholung.map(x => `${x.filiale} ca. ${x.ankunft} Uhr`).join(', ');
-  return `Route: Abfahrt ${S.settings.abfahrt} Uhr Filiale ${tourFiliale()}${ab ? ` · Abholung: ${ab}` : ''} → ${T().auftraege.length} Kunden → Ankunft ${S.settings.ziel.split(',').pop().trim()} ca. ${hhmm(r.ende)} Uhr · ${Math.round(r.km)} km · Fahrzeit ${hhmm(r.fahr)} h`
+  return `Route: Abfahrt ${abfahrt()} Uhr Filiale ${tourFiliale()}${ab ? ` · Abholung: ${ab}` : ''} → ${T().auftraege.length} Kunden → Ankunft ${S.settings.ziel.split(',').pop().trim()} ca. ${hhmm(r.ende)} Uhr · ${Math.round(r.km)} km · Fahrzeit ${hhmm(r.fahr)} h`
     + (r.warten > 0.05 ? ` · Wartezeit ${hhmm(r.warten)} h` : '') + (n ? ` · ${n} Kunde${n > 1 ? 'n' : ''} außerhalb des Zeitfensters (!)` : '');
 }
 function zeitplan() { // Ankunftszeiten für die aktuelle Reihenfolge (auch nach manuellem Verschieben)
@@ -1412,8 +1485,15 @@ function zeitplan() { // Ankunftszeiten für die aktuelle Reihenfolge (auch nach
   const gespeichert = route.seq && route.seq.filter(i => !info.abholung[i]);
   const seq = gespeichert && gespeichert.join(',') === kunden.join(',') && route.seq.every(i => info.abholung[i] ? kunden.some(k => info.vor[k] === i) : true)
     ? route.seq : abholungEinfuegen(kunden, info);
-  const r = simuliere(seq, route.M, info, zeitStd(S.settings.abfahrt));
+  const r = simuliere(seq, route.M, info, zeitStd(abfahrt()));
   const plan = { _r: r, _seq: seq, _abholung: [], _abholKnoten: info.abholung };
+  // spätere Abfahrt prüfen (15-Min-Schritte bis 6 h, ohne zusätzliche Verspätung): früheste Zeit mit der geringsten Wartezeit – so bleibt Puffer
+  if (!T().abfahrt) {
+    const opt = [], knapp = s => s.stops.filter(x => x.ankunft > info.fen[x.i][1] - 0.25).length; // < 15 Min vor Fensterende
+    for (let d = 0.25; d <= 6; d += 0.25) { const s = simuliere(seq, route.M, info, zeitStd(S.settings.abfahrt) + d); if (s.spaet <= r.spaet + 1e-6 && knapp(s) <= knapp(r)) opt.push({ d, w: s.warten }); }
+    const minW = Math.min(...opt.map(o => o.w)), best = opt.find(o => o.w <= minW + 0.05);
+    if (best && r.warten - best.w >= 0.25) plan._spaeter = { zeit: hhmm(zeitStd(S.settings.abfahrt) + best.d), spart: Math.round((r.warten - best.w) * 60) };
+  }
   const kundeAnKnoten = Object.fromEntries(A.map(a => [route.idx[a.id], a]));
   r.stops.forEach(s => {
     if (info.abholung[s.i]) plan._abholung.push({ filiale: info.abholung[s.i], ankunft: hhmm(s.ankunft) });
@@ -1441,7 +1521,9 @@ function routeInfo(plan) {
   }
   const r = plan._r, n = r.stops.filter(s => s.spaet && !plan._abholKnoten[s.i]).length;
   el.hidden = false;
-  el.innerHTML = `<span>🚚 <b>${Math.round(r.km)} km</b> · Fahrzeit ${hhmm(r.fahr)} h · Abfahrt ${escH(S.settings.abfahrt)} ${escH(tourFiliale())} → Ankunft ${escH(S.settings.ziel.split(',').pop().trim())} ca. <b>${hhmm(r.ende)}</b>${r.warten > 0.05 ? ` · Wartezeit ${hhmm(r.warten)} h` : ''}</span>`
+  el.innerHTML = `<span>🚚 <b>${Math.round(r.km)} km</b> · Fahrzeit ${hhmm(r.fahr)} h · Abfahrt ${escH(abfahrt())} ${escH(tourFiliale())} → Ankunft ${escH(S.settings.ziel.split(',').pop().trim())} ca. <b>${hhmm(r.ende)}</b>${r.warten > 0.05 ? ` · Wartezeit ${hhmm(r.warten)} h` : ''}</span>`
+    + (plan._spaeter ? `<span class="pill">⏰ Abfahrt ${plan._spaeter.zeit} statt ${escH(S.settings.abfahrt)} möglich – spart ${plan._spaeter.spart} Min Wartezeit, alle Zeitfenster wie bisher</span><button class="b" data-abfahrt="${plan._spaeter.zeit}">Abfahrt ${plan._spaeter.zeit} übernehmen</button>` : '')
+    + (T().abfahrt ? `<span class="pill warn">⏰ Abfahrt für diese Tour: ${escH(T().abfahrt)} (Standard ${escH(S.settings.abfahrt)})</span><button class="b" data-abfahrt="">Zurück auf ${escH(S.settings.abfahrt)}</button>` : '')
     + plan._abholung.map(x => `<span class="pill warn">📦 Abholung ${escH(x.filiale)} ca. ${x.ankunft}</span>`).join('')
     + (() => { const o = T().auftraege.filter(a => plan[a.id] && plan[a.id].vorschlag).length; return o ? `<span class="pill" title="Vorschläge stehen in der Spalte Ankunft">💡 ${o} Kunde${o > 1 ? 'n' : ''} ohne Zeitfenster – Vorschlag zum Avisieren</span>` : ''; })()
     + (n ? `<span class="pill warn">${n} Kunde${n > 1 ? 'n' : ''} außerhalb des Zeitfensters</span>` : '<span class="pill ok">alle Zeitfenster eingehalten</span>')
@@ -1452,6 +1534,7 @@ function routeInfo(plan) {
 $('#rInfo').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.hasAttribute('data-neuplanen')) $('#tRoute').click();
+  if (b.hasAttribute('data-abfahrt')) { T().abfahrt = b.dataset.abfahrt || null; save(); renderTour(); toast(`Abfahrt ${abfahrt()} Uhr`); }
   if (b.hasAttribute('data-routedoc')) {
     const doc = routeDokument(zeitplan()); if (!doc) return toast('Bitte zuerst die Route planen.');
     const bytes = await Dispo.buildListXlsx(JSZip, doc);
@@ -1460,6 +1543,8 @@ $('#rInfo').addEventListener('click', async e => {
 });
 
 function renderTour() {
+  const n = t => t.auftraege.length ? ` (${t.auftraege.length})` : '', andere = S.fz === 2 ? 1 : 2;
+  $('#tFz').innerHTML = [1, 2].map(f => `<button class="b${f === S.fz ? ' p' : ''}" data-fz="${f}">🚚 Fahrzeug ${f}${n(f === S.fz ? S.tour : S.tour2)}</button>`).join('');
   const plan = zeitplan() || {};
   $('#tDatum').value = T().datum; $('#tStart').value = startNr();
   fillFilialen($('#tFiliale'), tourFiliale()); $('#hFiliale').textContent = tourFiliale();
@@ -1472,9 +1557,9 @@ function renderTour() {
     if (a._status === 'rechnet') st = '<span class="pill">…</span>';
     else if (a._status === 'fehler') st = `<span class="pill warn" title="${escH(a._err)}">?</span>`;
     else if (a.dist != null) st = `<span class="pill ok" title="Fahrstrecke ab Filiale ${escH(tourFiliale())}">${a.dist.toFixed(1).replace('.', ',')} km</span>`;
-    return `<tr data-i="${i}">
+    return `<tr data-i="${i}"${kundeById(a.kundeId)?.fest ? ' class="fest"' : ''}>
       <td class="t-move" style="white-space:nowrap"><button class="i" data-up title="Nach oben">▲</button><button class="i" data-down title="Nach unten">▼</button></td>
-      <td class="t-name" style="min-width:140px"><input data-f="name" value="${escH(a.name)}" aria-label="Name">${rnr}${abwFiliale(a) ? `<div style="font-size:11px">${filialPill(a)}</div>` : ''}</td>
+      <td class="t-name" style="min-width:140px"><input data-f="name" value="${escH(a.name)}" aria-label="Name">${rnr}${festPill(kundeById(a.kundeId))}${abwFiliale(a) ? `<div style="font-size:11px">${filialPill(a)}</div>` : ''}</td>
       <td class="t-auf" data-l="Auftragsnr." style="min-width:100px"><input data-f="auftrag" value="${escH(a.auftrag)}"></td>
       <td class="t-adr" data-l="Adresse" style="min-width:220px"><input data-f="adresse" value="${escH(a.adresse)}"></td>
       <td class="t-tel" data-l="Telefon" style="min-width:120px"><input data-f="tel" value="${escH(a.tel)}"></td>
@@ -1487,7 +1572,7 @@ function renderTour() {
       <td class="t-cb" data-l="Intern" style="text-align:center"><input type="checkbox" data-f="intern" ${a.intern ? 'checked' : ''}></td>
       <td class="t-cb" data-l="Offen" style="text-align:center"><input type="checkbox" data-f="offen" ${a.offen ? 'checked' : ''}></td>
       <td class="num tot t-betrag">${betrag}</td>
-      <td class="t-rm"><button class="i" data-rm title="Aus Tour entfernen">✕</button></td></tr>`;
+      <td class="t-rm" style="white-space:nowrap"><button class="i" data-fzmove title="In Fahrzeug ${andere} verschieben">⇄</button><button class="i" data-rm title="Aus Tour entfernen">✕</button></td></tr>`;
   }).join('');
   $('#tLeer').hidden = A.length > 0; $('#tTab').hidden = A.length === 0;
   routeInfo(plan);
@@ -1519,6 +1604,7 @@ $('#tTab').addEventListener('click', e => {
   if (b.hasAttribute('data-up') && i > 0) [A[i - 1], A[i]] = [A[i], A[i - 1]];
   if (b.hasAttribute('data-down') && i < A.length - 1) [A[i + 1], A[i]] = [A[i], A[i + 1]];
   if (b.hasAttribute('data-rm')) A.splice(i, 1);
+  if (b.hasAttribute('data-fzmove')) { S.tour2.auftraege.push(...A.splice(i, 1)); toast(`In Fahrzeug ${S.fz === 2 ? 1 : 2} verschoben – Route neu planen`); }
   if (b.hasAttribute('data-km')) { kmFuer(A[i]); return; }
   if (b.dataset.vorschlag) { // vorgeschlagenes Zeitfenster übernehmen (Tour + Kundendatenbank)
     const alt = (A[i].zeit || '').trim(), k = kundeById(A[i].kundeId);
@@ -1564,7 +1650,7 @@ $('#impOk').onclick = e => {
     neu.push([k, { auftrag, zeit: z, etage: et, entsorgung: ent, km, intern }]);
   }
   if (warn.length && !confirm('Achtung:\n' + warn.join('\n') + '\n\nTrotzdem übernehmen? (Beträge werden nach Formel berechnet)')) { e.preventDefault(); return; }
-  neu.forEach(([k, x]) => { if (!T().auftraege.some(a => a.kundeId === k.id)) addToTour(k, x); });
+  neu.forEach(([k, x]) => { if (!inTour(k.id)) addToTour(k, x); });
   save(); renderTour(); toast(`${neu.length} Aufträge übernommen`);
 };
 
@@ -1598,7 +1684,7 @@ async function erzeuge(data) {
   download(d.bytes, d.filename, MIME_DOCX); await sleep(400); download(x.bytes, x.filename, MIME_XLSX);
   if (data.routeDoc) { // Fahrplan als eigenes Dokument
     const r = await Dispo.buildListXlsx(JSZip, data.routeDoc);
-    await sleep(400); download(r, `Route_${(data.filiale || 'Krefeld').replace(/[^\wäöüÄÖÜß-]+/g, '_')}_${data.datum}.xlsx`, MIME_XLSX);
+    await sleep(400); download(r, `Route_${(data.filiale || 'Krefeld').replace(/[^\wäöüÄÖÜß-]+/g, '_')}${data.fahrzeug ? '_Fahrzeug' + data.fahrzeug : ''}_${data.datum}.xlsx`, MIME_XLSX);
   }
   return d;
 }
@@ -1608,7 +1694,7 @@ function routeDokument(plan) {
   const A = T().auftraege, route = T().route, r = plan._r;
   const kundeAnKnoten = Object.fromEntries(A.map(a => [route.idx[a.id], a]));
   const stand = (+S.settings.standzeit || 0) / 60, lade = (+S.settings.ladezeit || 0) / 60;
-  const rows = [['Start', '', S.settings.abfahrt, `Filiale ${tourFiliale()}`, startAdresse(), '', '', 'Ware laden']];
+  const rows = [['Start', '', abfahrt(),`Filiale ${tourFiliale()}`, startAdresse(), '', '', 'Ware laden']];
   r.stops.forEach((s, n) => {
     const f = plan._abholKnoten[s.i];
     if (f) {
@@ -1650,18 +1736,19 @@ $('#tErzeugen').onclick = async () => {
     A = T().auftraege;
   }
   A.forEach(a => { a.filiale = abwFiliale(a); }); // nur echte Abweichungen an die Dokumente geben
-  const data = { datum: isoToDe(T().datum), start_nr: startNr(), filiale: tourFiliale(), preise: { ...P() }, routeInfo: routeText(plan), routeDoc: routeDokument(plan),
+  const fz = S.fz === 2 || S.tour2.auftraege.length ? S.fz : null; // nur kennzeichnen, wenn zwei Fahrzeuge im Spiel sind
+  const data = { datum: isoToDe(T().datum), start_nr: startNr(), filiale: tourFiliale(), fahrzeug: fz, preise: { ...P() }, routeInfo: [fz && `Fahrzeug ${fz}`, routeText(plan)].filter(Boolean).join(' · '), routeDoc: routeDokument(plan),
     kunden: A.map(({ _status, _err, ...a }) => Object.assign(a, plan && plan[a.id] ? { ankunft: plan[a.id].ankunft, spaet: plan[a.id].spaet } : { ankunft: '', spaet: false })) };
   const dup = S.archiv.find(x => x.first <= data.start_nr && x.last >= data.start_nr);
   if (dup && !confirm(`Rechnungsnummer ${data.start_nr} wurde schon in der Tour vom ${dup.datum} vergeben. Trotzdem erzeugen?`)) return;
   try {
     $('#tErzeugen').disabled = true;
     const d = await erzeuge(data);
-    S.archiv.unshift({ datum: data.datum, filiale: data.filiale, preise: data.preise, routeInfo: data.routeInfo, routeDoc: data.routeDoc, first: d.first, last: d.last,
+    S.archiv.unshift({ datum: data.datum, filiale: data.filiale, fahrzeug: fz, preise: data.preise, routeInfo: data.routeInfo, routeDoc: data.routeDoc, first: d.first, last: d.last,
       summe: A.filter(a => !a.intern && !a.offen).reduce((s, a) => s + total(a), 0), kunden: data.kunden, nummern: d.nummern, erzeugt: new Date().toISOString() });
     S.settings.letzteNr = Math.max(+S.settings.letzteNr || 0, d.last);
     for (const a of A) { const k = kundeById(a.kundeId); if (k) { k.letzteTour = data.datum; k.status = 'Abgeschlossen'; if (!k.lieferdatum) k.lieferdatum = T().datum; } }
-    T().auftraege = []; T().startNr = null; T().datum = morgen();
+    T().auftraege = []; T().startNr = null; T().abfahrt = null; T().datum = morgen();
     save(); renderTour();
     toast(`Fertig: Rechnungen ${d.first}–${d.last} und Rollkarte heruntergeladen. Kunden auf „Abgeschlossen“ gesetzt, Tour im Archiv.`, 7000);
   } catch (e) { alert('Fehler beim Erzeugen: ' + e.message); }
@@ -1696,7 +1783,7 @@ $('#mExport').onclick = async () => {
 function renderArchiv() {
   $('#mMonat').onchange();
   $('#aTab tbody').innerHTML = S.archiv.map((t, i) => `<tr>
-    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}</td><td data-l="Rechnungen">${t.first}–${t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
+    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}${t.fahrzeug ? ` · Fz ${t.fahrzeug}` : ''}</td><td data-l="Rechnungen">${t.first}–${t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
     <td class="muted small a-kunden">${t.kunden.map(k => escH(k.name)).join(', ')}</td>
     <td class="a-akt" style="white-space:nowrap"><button class="b" data-dl="${i}">Dateien erneut erzeugen</button> <button class="b" data-copy="${i}">Als neue Tour laden</button></td></tr>`).join('');
   $('#aLeer').hidden = S.archiv.length > 0; $('#aTab').hidden = !S.archiv.length;
@@ -1705,7 +1792,7 @@ $('#aTab').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.dl) {
     const t = S.archiv[+b.dataset.dl];
-    await erzeuge({ datum: t.datum, start_nr: t.first, filiale: t.filiale, preise: t.preise, routeInfo: t.routeInfo, routeDoc: t.routeDoc, kunden: t.kunden });
+    await erzeuge({ datum: t.datum, start_nr: t.first, filiale: t.filiale, fahrzeug: t.fahrzeug, preise: t.preise, routeInfo: t.routeInfo, routeDoc: t.routeDoc, kunden: t.kunden });
   }
   if (b.dataset.copy) {
     const t = S.archiv[+b.dataset.copy];
