@@ -517,10 +517,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     K.forEach(k => {
       const et = +k.etage || 0, ent = +k.entsorgung || 0, km = +k.km || 0;
       if (!k.intern) {
+        const rn = k.rnr != null && k.rnr !== '' ? +k.rnr : nr++; // feste Nummer (z. B. Einzelrechnung), sonst fortlaufend
         const gp = grundpreis(k, P);
         const repl = {
           25: k.filiale || FILIALE, // abweichende Filiale des Kunden, sonst Filiale der Tour
-          6: String(nr), 8: ` ${dd}.${mm}.`, 9: yyyy, 11: k.name, 13: k.adresse || '', 16: ` ${k.tel || ''}`, 26: String(k.auftrag || ''),
+          6: String(rn), 8: ` ${dd}.${mm}.`, 9: yyyy, 11: k.name, 13: k.adresse || '', 16: ` ${k.tel || ''}`, 26: String(k.auftrag || ''),
           36: '1', 38: eur(gp), 40: '   ' + eur(gp),
           41: String(km), 43: eur(+P.km) + '     ', 44: km ? eur(km * P.km) : '',
           45: String(et), 47: eur(+P.etage), 48: et ? eur(et * P.etage) : '',
@@ -530,8 +531,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (k.offen) for (const i of [36, 38, 40, 41, 44, 45, 48, 49, 52, 55, 56, 59, 62, 64, 67, 71]) repl[i] = '';
         const body = splitBody(render(rx, repl))[1];
         parts.push({ body: tinyLast(body, true) + tinyLast(body, false), sect: RSECT });
-        nummern.push({ name: k.name, auftrag: k.auftrag, nr, betrag: k.offen ? null : total(k, P) });
-        nr++;
+        nummern.push({ name: k.name, auftrag: k.auftrag, nr: rn, betrag: k.offen ? null : total(k, P) });
       }
       const repl = { 1: `Fahrer: _________   Datum: ${data.datum}`, 9: ` ${k.auftrag || ''}   `, 10: `Filiale:  ${k.filiale || FILIALE}`, 12: ` ${k.name}` };
       const body = splitBody(render(sx, repl))[1].replace(/<w:numId w:val="(\d+)"\/>/g, (m, id) => {
@@ -562,9 +562,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     R.file('word/document.xml', x);
 
     const bytes = await R.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+    const first = Math.min(...nummern.map(n => n.nr)), last = Math.max(...nummern.map(n => n.nr));
     return {
-      bytes, nummern, first: +data.start_nr, last: nr - 1,
-      filename: `Seats_and_Sofas_Rechnungen_und_Spediformulare_${data.start_nr}-${nr - 1}.docx`
+      bytes, nummern, first, last,
+      filename: `Seats_and_Sofas_Rechnungen_und_Spediformulare_${first}-${last}.docx`
     };
   }
 
@@ -1306,6 +1307,8 @@ $('#tKmAlle').onclick = async () => {
   toast(f ? `${f} Adresse(n) nicht gefunden – bitte prüfen oder km von Hand eintragen.` : 'Kilometer berechnet');
 };
 
+// Nummer einer Einzelrechnung (🖨 in der Kundenliste) für diesen Auftrag – die Tour übernimmt sie statt einer neuen
+const einzelNr = a => { if (a.intern) return null; const t = S.archiv.find(t => t.einzeln && t.kunden[0] && t.kunden[0].kundeId === a.kundeId); return t ? t.nummern[0].nr : null; };
 const startNr = () => T().startNr || (+S.settings.letzteNr || 0) + 1;
 // ================= Tourplanung (Start Filiale -> Kunden -> Ziel, mit Zeitfenstern) =================
 function hhmm(h) { const m = Math.round(h * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
@@ -1578,7 +1581,7 @@ function renderTour() {
   $('#tTab tbody').innerHTML = A.map((a, i) => {
     const betrag = a.intern ? 'intern' : (a.offen ? 'offen' : eur(total(a)));
     if (!a.intern && !a.offen) sum += total(a);
-    const rnr = a.intern ? '' : `<div class="muted" style="font-size:11px">Re. ${nr++}</div>`;
+    const fest = einzelNr(a), rnr = a.intern ? '' : `<div class="muted" style="font-size:11px"${fest ? ' title="Rechnung wurde schon einzeln gedruckt – Nummer bleibt"' : ''}>Re. ${fest || nr++}${fest ? ' (schon gedruckt)' : ''}</div>`;
     let st = '';
     if (a._status === 'rechnet') st = '<span class="pill">…</span>';
     else if (a._status === 'fehler') st = `<span class="pill warn" title="${escH(a._err)}">?</span>`;
@@ -1603,8 +1606,8 @@ function renderTour() {
   $('#tLeer').hidden = A.length > 0; $('#tTab').hidden = A.length === 0;
   routeInfo(plan);
   $('#tSumme').textContent = eur(sum);
-  const rech = A.filter(a => !a.intern).length;
-  $('#tInfo').textContent = A.length ? `${A.length} Aufträge · ${rech} Rechnungen${rech ? ` (Nr. ${startNr()}–${startNr() + rech - 1})` : ''}` : '';
+  const rech = A.filter(a => !a.intern).length, neu = A.filter(a => !a.intern && !einzelNr(a)).length;
+  $('#tInfo').textContent = A.length ? `${A.length} Aufträge · ${rech} Rechnungen${neu ? ` (neu Nr. ${startNr()}–${startNr() + neu - 1})` : ''}${rech > neu ? ` · ${rech - neu} schon gedruckt` : ''}` : '';
   const kand = kandidaten();
   $('#tBanner').hidden = !kand.length;
   $('#tBannerText').innerHTML = kand.length ? `<b>${kand.length}</b> Kunde${kand.length > 1 ? 'n' : ''} mit Lieferdatum ${isoToDe(T().datum)} noch nicht in der Tour: ${kand.slice(0, 8).map(k => escH(k.name)).join(', ')}${kand.length > 8 ? ' …' : ''}` : '';
@@ -1761,7 +1764,7 @@ $('#tErzeugen').onclick = async () => {
     finally { $('#tErzeugen').disabled = false; }
     A = T().auftraege;
   }
-  A.forEach(a => { a.filiale = abwFiliale(a); }); // nur echte Abweichungen an die Dokumente geben
+  A.forEach(a => { a.filiale = abwFiliale(a); a.rnr = einzelNr(a); }); // nur echte Abweichungen an die Dokumente geben; Einzelrechnungen behalten ihre Nummer
   const fz = S.fz === 2 || S.tour2.auftraege.length ? S.fz : null; // nur kennzeichnen, wenn zwei Fahrzeuge im Spiel sind
   const data = { datum: isoToDe(T().datum), start_nr: startNr(), filiale: tourFiliale(), fahrzeug: fz, preise: { ...P() }, routeInfo: [fz && `Fahrzeug ${fz}`, routeText(plan)].filter(Boolean).join(' · '), routeDoc: routeDokument(plan),
     kunden: A.map(({ _status, _err, ...a }) => Object.assign(a, plan && plan[a.id] ? { ankunft: plan[a.id].ankunft, spaet: plan[a.id].spaet } : { ankunft: '', spaet: false })) };
@@ -1770,6 +1773,8 @@ $('#tErzeugen').onclick = async () => {
   try {
     $('#tErzeugen').disabled = true;
     const d = await erzeuge(data);
+    data.kunden.filter(k => !k.intern).forEach((k, j) => { k.rnr = d.nummern[j].nr; }); // Nummern festhalten (erneut erzeugen = gleiche Nummern)
+    S.archiv = S.archiv.filter(t => !(t.einzeln && A.some(a => a.rnr && t.kunden[0] && t.kunden[0].kundeId === a.kundeId))); // Einzelrechnung steckt jetzt in der Tour
     S.archiv.unshift({ datum: data.datum, filiale: data.filiale, fahrzeug: fz, preise: data.preise, routeInfo: data.routeInfo, routeDoc: data.routeDoc, first: d.first, last: d.last,
       summe: A.filter(a => !a.intern && !a.offen).reduce((s, a) => s + total(a), 0), kunden: data.kunden, nummern: d.nummern, erzeugt: new Date().toISOString() });
     S.settings.letzteNr = Math.max(+S.settings.letzteNr || 0, d.last);
