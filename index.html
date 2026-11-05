@@ -62,7 +62,8 @@ td.num,th.num{text-align:right}
 .tot{font-weight:650;white-space:nowrap}
 .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);white-space:nowrap}
 .pill.ok{color:var(--ok)} .pill.warn{color:var(--warn)} .pill.acc{color:var(--accent)}
-.pill.fest{background:#c62828;color:#fff;font-weight:700} tr.fest>td{background:rgba(198,40,40,.10)} tr.fest>td:first-child{box-shadow:inset 4px 0 #c62828}
+.pill.fest{background:#c62828;color:#fff;font-weight:700} tr.fest{background:rgba(198,40,40,.10)} tr.fest>td:first-child{box-shadow:inset 4px 0 #c62828}
+.pill.filterm{background:#2e7d32;color:#fff;font-weight:700} tr.filterm{background:rgba(46,125,50,.14)} tr.filterm>td:first-child{box-shadow:inset 4px 0 #2e7d32}
 .sum{display:flex;gap:24px;align-items:center;justify-content:flex-end;padding-top:12px;flex-wrap:wrap}
 .sum b{font-size:20px}
 .banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--soft);margin-top:12px}
@@ -331,6 +332,7 @@ body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-c
       <label>Filiale (Ware kommt aus)<select name="filiale"></select></label>
       <label class="check" style="align-self:end"><input type="checkbox" name="intern"> interner Auftrag (keine Rechnung)</label>
       <label class="check" id="lFest"><input type="checkbox" name="fest"> <b>Fest terminiert</b> (Termin mit Kunde verbindlich)</label>
+      <label class="check"><input type="checkbox" name="filTerm"> <b>Terminiert durch Filiale</b></label>
       <label class="full">Notiz<textarea name="notiz" rows="2"></textarea></label>
     </div>
     <div class="formula" id="kPreis" style="margin-top:12px"></div>
@@ -1031,10 +1033,10 @@ function extraKm(dist) {
 }
 
 // ================= Kunden-Datenbank =================
-const FELDER = ['name', 'adresse', 'tel', 'auftrag', 'lieferdatum', 'zeit', 'etage', 'entsorgung', 'status', 'filiale', 'intern', 'fest', 'notiz'];
+const FELDER = ['name', 'adresse', 'tel', 'auftrag', 'lieferdatum', 'zeit', 'etage', 'entsorgung', 'status', 'filiale', 'intern', 'fest', 'filTerm', 'notiz'];
 // abweichende Filiale eines Kunden ('' = Standard, also die Filiale der Tour)
 const abwFiliale = x => (x.filiale && x.filiale !== tourFiliale() ? x.filiale : '');
-const festPill = k => k && k.fest ? ' <span class="pill fest">📌 FEST TERMINIERT</span>' : '';
+const festPill = k => (k && k.fest ? ' <span class="pill fest">📌 FEST TERMINIERT</span>' : '') + (k && k.filTerm ? ' <span class="pill filterm">🏬 TERMINIERT DURCH FILIALE</span>' : '');
 const filialPill = x => abwFiliale(x) ? ` <span class="pill warn" title="Ware kommt aus dieser Filiale">Filiale ${escH(x.filiale)}</span>` : '';
 const kundeById = id => S.kunden.find(k => k.id === id);
 function upsertKunde(d) {
@@ -1189,7 +1191,7 @@ let kOffen = new Set(); // aufgeklappte Preise bleiben beim Neuzeichnen offen
 function renderKunden() {
   const list = kundenGefiltert(), MAX = 400;
   kOffen = new Set([...document.querySelectorAll('#kTab details.preis[open]')].map(d => d.dataset.id));
-  $('#kTab tbody').innerHTML = list.slice(0, MAX).map(k => `<tr class="${k.status === 'Abgeschlossen' ? 'done' : ''}${k.fest ? ' fest' : ''}">
+  $('#kTab tbody').innerHTML = list.slice(0, MAX).map(k => `<tr class="${k.status === 'Abgeschlossen' ? 'done' : ''}${k.fest ? ' fest' : ''}${k.filTerm ? ' filterm' : ''}">
     <td class="k-dat" style="white-space:nowrap">${k.lieferdatum ? isoToDe(k.lieferdatum) : '<span class="muted">–</span>'}</td>
     <td class="small k-zeit">${escH(k.zeit)}</td>
     <td class="k-name"><b>${escH(k.name)}</b>${k.intern ? ' <span class="pill acc">intern</span>' : ''}${festPill(k)}${filialPill(k)}</td>
@@ -1557,7 +1559,7 @@ function renderTour() {
     if (a._status === 'rechnet') st = '<span class="pill">…</span>';
     else if (a._status === 'fehler') st = `<span class="pill warn" title="${escH(a._err)}">?</span>`;
     else if (a.dist != null) st = `<span class="pill ok" title="Fahrstrecke ab Filiale ${escH(tourFiliale())}">${a.dist.toFixed(1).replace('.', ',')} km</span>`;
-    return `<tr data-i="${i}"${kundeById(a.kundeId)?.fest ? ' class="fest"' : ''}>
+    return `<tr data-i="${i}" class="${kundeById(a.kundeId)?.fest ? 'fest' : ''}${kundeById(a.kundeId)?.filTerm ? ' filterm' : ''}">
       <td class="t-move" style="white-space:nowrap"><button class="i" data-up title="Nach oben">▲</button><button class="i" data-down title="Nach unten">▼</button></td>
       <td class="t-name" style="min-width:140px"><input data-f="name" value="${escH(a.name)}" aria-label="Name">${rnr}${festPill(kundeById(a.kundeId))}${abwFiliale(a) ? `<div style="font-size:11px">${filialPill(a)}</div>` : ''}</td>
       <td class="t-auf" data-l="Auftragsnr." style="min-width:100px"><input data-f="auftrag" value="${escH(a.auftrag)}"></td>
