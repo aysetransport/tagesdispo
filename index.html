@@ -227,6 +227,17 @@ button.b.klein .ico{width:15px;height:15px}
 #kTab td.k-akt{text-align:right}
 #kTab details.preis summary{text-decoration:none;font-weight:600}
 .small{font-size:inherit}
+/* ===== Archiv & Listen (PC): ruhige Liste wie Kunden ===== */
+#aTab{font-size:var(--t-unter)}
+#aTab td{padding:12px 6px;vertical-align:top}
+#aTab td.a-dat b{font-weight:600;white-space:nowrap}
+#aTab td.a-fil{color:var(--leise);white-space:nowrap}
+#aTab td.a-sum{font-weight:700;white-space:nowrap}
+#aTab td.a-kunden{color:var(--leise);line-height:1.4;min-width:220px}
+#aTab td.a-akt{text-align:right}
+#aTab td.a-akt .b{margin:0 0 6px 6px}
+#archiv .row{align-items:flex-end}
+#mInfo{align-self:center}
 /* ===== Bewegung: Bereiche blenden ein, Karten nacheinander, Glas-Blase gleitet zum aktiven Reiter ===== */
 @media (prefers-reduced-motion:no-preference){
   main > section:not([hidden]) > *{animation:einblenden .42s cubic-bezier(.2,.8,.2,1) both}
@@ -368,6 +379,20 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #tTab .t-adr{min-width:0!important}
   #tTab input[type=time]{width:calc(50% - 3px)!important}
   #tTab .t-move,#tTab .t-rm{width:auto;display:flex}
+  /* Archiv: jede erzeugte Tour eine eigene Karte */
+  #archiv .card:has(#aTab){background:none;padding:0}
+  #archiv .card:has(#aTab) > h2{padding:0 4px}
+  #aTab tr{gap:6px 12px;padding:16px;margin:0 0 10px;background:var(--flaeche);border-radius:var(--r-zelle);border-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.05);align-items:baseline}
+  #aTab td.a-dat{order:1;font-size:var(--t-kopf)}
+  #aTab td.a-sum{order:2;font-size:var(--t-kopf);margin-left:auto}
+  #aTab td.a-fil{order:3;flex:1 1 100%;color:var(--leise);font-size:var(--t-unter);white-space:normal}
+  #aTab td[data-l]{order:4;font-size:var(--t-fuss);color:var(--text)}
+  #aTab td[data-l]::before{display:inline!important;margin-right:4px}
+  #aTab td.a-kunden{order:5;flex:1 1 100%;font-size:var(--t-fuss);min-width:0}
+  #aTab td.a-akt{order:6;flex:1 1 100%;display:flex;flex-direction:column;gap:8px;text-align:left;margin-top:4px}
+  #aTab td.a-akt .b{margin:0;min-height:42px;white-space:nowrap}
+  #archiv .row > label{flex:1 1 calc(50% - 6px)}
+  #archiv .row > .b{flex:1 1 100%}
 }
 </style>
 </head>
@@ -1424,6 +1449,7 @@ const ICO = { // Liniensymbole (Lucide, ISC-Lizenz) statt Zeichen ▲▼✕➕�
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', neu: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
   stift: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
   muell: '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  laden: '<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
   lkw: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   drucken: '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>' };
 const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
@@ -2052,9 +2078,9 @@ $('#mExport').onclick = async () => {
 function renderArchiv() {
   $('#mMonat').onchange();
   $('#aTab tbody').innerHTML = S.archiv.map((t, i) => `<tr>
-    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}${t.fahrzeug ? ` · Fz ${t.fahrzeug}` : ''}${t.einzeln ? ' · Einzelrechnung' : ''}</td><td data-l="Rechnungen">${t.first}–${t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
+    <td class="a-dat"><b>${t.datum}</b></td><td class="a-fil">${escH(t.filiale || 'Krefeld')}${t.fahrzeug ? ` · Fz ${t.fahrzeug}` : ''}${t.einzeln ? ' · Einzelrechnung' : ''}</td><td data-l="${t.first === t.last ? 'Rechnung' : 'Rechnungen'}">${t.first === t.last ? t.first : t.first + '–' + t.last}</td><td class="num" data-l="Aufträge">${t.kunden.length}</td><td class="num a-sum">${eur(t.summe)}</td>
     <td class="muted small a-kunden">${t.kunden.map(k => escH(k.name)).join(', ')}</td>
-    <td class="a-akt" style="white-space:nowrap"><button class="b" data-dl="${i}">Dateien erneut erzeugen</button> <button class="b" data-copy="${i}">Als neue Tour laden</button></td></tr>`).join('');
+    <td class="a-akt"><button class="b klein" data-dl="${i}">${ico('laden')}Dateien erneut erzeugen</button><button class="b klein" data-copy="${i}">${ico('lkw')}Als neue Tour laden</button></td></tr>`).join('');
   $('#aLeer').hidden = S.archiv.length > 0; $('#aTab').hidden = !S.archiv.length;
 }
 $('#aTab').onclick = async e => {
