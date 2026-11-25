@@ -3,10 +3,10 @@
 <head>
 <script>window.API_URL = "https://script.google.com/macros/s/AKfycbys9otpu_MsFtIIzrDyy-VsHs-qb2DlNzyMXvK_OTwNMgu_hGtXf-8cSDjV_aOGxyeB/exec";
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});</script>
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#A3352B">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tagesdispo Krefeld</title>
 <script>
 // Fehleranzeige: Skriptfehler sichtbar oben auf der Seite melden (hilft bei der Fehlersuche, v. a. in der Google-Version)
@@ -21,71 +21,211 @@ function zeigeFehler(t) {
 window.addEventListener('load', () => { if (!window.__appBereit) zeigeFehler('Hauptskript wurde nicht vollständig geladen'); });
 </script>
 <style>
-:root{--bg:#F6F5F2;--panel:#fff;--fg:#22211E;--muted:#6B685F;--line:#DDD9CF;--accent:#A3352B;--accent-fg:#fff;--ok:#2F7A4B;--warn:#B26B00;--soft:#F1EEE8;
-  font:15px/1.45 "Segoe UI",system-ui,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1A1917;--panel:#23221F;--fg:#ECE9E2;--muted:#A19D93;--line:#3A3832;--accent:#E07B6E;--accent-fg:#1A1917;--ok:#6BC28E;--warn:#E3A44A;--soft:#2C2A26;color-scheme:dark}}
+/* ============================================================================================================
+   Tagesdispo – Apple-Design wie Ayse CRM (Human Interface Guidelines): Systemfarben hell/dunkel, Systemschrift,
+   gruppierte Flächen, Pillen-Knöpfe. Liquid Glass (Kopfleiste, Reiter, Knöpfe, Sheets, Meldungen): klare Linse mit
+   Lichtbrechung am Rand (Chromium), Glanz folgt Neigung bzw. Maus.
+   shortcut: Farb-/Maß-Tokens und Glas-Funktionen aus Ayse CRM (aysetransport/test, web/index.html) kopiert – dort ändern, hier nachziehen.
+   ============================================================================================================ */
+:root{
+  /* Systemfarben (hell) */
+  --sys-rot:#FF3B30;--sys-orange:#FF9500;--sys-gelb:#FFCC00;--sys-gruen:#34C759;--sys-mint:#00C7BE;--sys-tuerkis:#30B0C7;--sys-blau:#007AFF;--sys-indigo:#5856D6;--sys-lila:#AF52DE;--sys-pink:#FF2D55;--sys-grau:#8E8E93;
+  /* gut lesbare Varianten für Text auf hellem Grund */
+  --txt-rot:#D70015;--txt-orange:#C93400;--txt-gelb:#A05A00;--txt-gruen:#248A3D;--txt-tuerkis:#008299;--txt-blau:#0040DD;--txt-indigo:#3634A3;--txt-lila:#8944AB;--txt-grau:#6C6C70;
+  --bg:#F2F2F7;            /* systemGroupedBackground */
+  --flaeche:#FFFFFF;       /* secondarySystemGroupedBackground: Zellen, Karten */
+  --flaeche2:rgba(118,118,128,.12); /* tertiarySystemFill: Felder, Kacheln */
+  --fuell:rgba(120,120,128,.20);    /* systemFill: Schalter, Griffe */
+  --hoch:#FFFFFF;          /* erhöhte Ebenen: Sheets, Menüs */
+  --text:#000000;--leise:rgba(60,60,67,.60);--leise3:rgba(60,60,67,.30);
+  --linie:rgba(60,60,67,.29);--rand:#C6C6C8;
+  --marke:#D7192E;--primaer:var(--marke);--auf-primaer:#FFFFFF;
+  --primaer-hell:color-mix(in srgb,var(--primaer) 14%,transparent);--auf-primaer-hell:var(--primaer);
+  --fehler:var(--sys-rot);
+  --glas:rgba(250,250,252,.72);--glas-dicht:rgba(250,250,252,.92);--glas-rand:rgba(0,0,0,.06);--glas-licht:rgba(255,255,255,.9);--maus-licht:rgba(255,255,255,.55);
+  --schatten:0 8px 28px rgba(0,0,0,.12),0 1px 3px rgba(0,0,0,.06);--schatten-gross:0 24px 64px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);
+  --unschaerfe:blur(24px) saturate(190%);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --sys-rot:#FF453A;--sys-orange:#FF9F0A;--sys-gelb:#FFD60A;--sys-gruen:#30D158;--sys-mint:#63E6E2;--sys-tuerkis:#40C8E0;--sys-blau:#0A84FF;--sys-indigo:#5E5CE6;--sys-lila:#BF5AF2;--sys-pink:#FF375F;--sys-grau:#8E8E93;
+  --txt-rot:#FF6961;--txt-orange:#FFB340;--txt-gelb:#FFD426;--txt-gruen:#30DB5B;--txt-tuerkis:#5DE6FF;--txt-blau:#409CFF;--txt-indigo:#7D7AFF;--txt-lila:#DA8FFF;--txt-grau:#AEAEB2;
+  --bg:#000000;--flaeche:#1C1C1E;--flaeche2:rgba(118,118,128,.24);--fuell:rgba(120,120,128,.36);--hoch:#2C2C2E;
+  --text:#FFFFFF;--leise:rgba(235,235,245,.60);--leise3:rgba(235,235,245,.30);--linie:rgba(84,84,88,.65);--rand:#38383A;
+  --marke:#FF4F61;
+  --glas:rgba(30,30,32,.62);--glas-dicht:rgba(36,36,38,.92);--glas-rand:rgba(255,255,255,.10);--glas-licht:rgba(255,255,255,.16);--maus-licht:rgba(255,255,255,.16);
+  --schatten:0 8px 28px rgba(0,0,0,.45);--schatten-gross:0 24px 64px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --sys-rot:#FF453A;--sys-orange:#FF9F0A;--sys-gelb:#FFD60A;--sys-gruen:#30D158;--sys-mint:#63E6E2;--sys-tuerkis:#40C8E0;--sys-blau:#0A84FF;--sys-indigo:#5E5CE6;--sys-lila:#BF5AF2;--sys-pink:#FF375F;--sys-grau:#8E8E93;
+  --txt-rot:#FF6961;--txt-orange:#FFB340;--txt-gelb:#FFD426;--txt-gruen:#30DB5B;--txt-tuerkis:#5DE6FF;--txt-blau:#409CFF;--txt-indigo:#7D7AFF;--txt-lila:#DA8FFF;--txt-grau:#AEAEB2;
+  --bg:#000000;--flaeche:#1C1C1E;--flaeche2:rgba(118,118,128,.24);--fuell:rgba(120,120,128,.36);--hoch:#2C2C2E;
+  --text:#FFFFFF;--leise:rgba(235,235,245,.60);--leise3:rgba(235,235,245,.30);--linie:rgba(84,84,88,.65);--rand:#38383A;
+  --marke:#FF4F61;
+  --glas:rgba(30,30,32,.62);--glas-dicht:rgba(36,36,38,.92);--glas-rand:rgba(255,255,255,.10);--glas-licht:rgba(255,255,255,.16);--maus-licht:rgba(255,255,255,.16);
+  --schatten:0 8px 28px rgba(0,0,0,.45);--schatten-gross:0 24px 64px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+/* Kennfarben (Abzeichen, Kalender, Hinweise): Systemfarbe als zarte Fläche, Text in der gut lesbaren Variante */
+:root{
+  --rot-f:color-mix(in srgb,var(--sys-rot) 15%,transparent);--rot-t:var(--txt-rot);
+  --orange-f:color-mix(in srgb,var(--sys-orange) 16%,transparent);--orange-t:var(--txt-orange);
+  --gelb-f:color-mix(in srgb,var(--sys-gelb) 22%,transparent);--gelb-t:var(--txt-gelb);
+  --gruen-f:color-mix(in srgb,var(--sys-gruen) 16%,transparent);--gruen-t:var(--txt-gruen);
+  --tuerkis-f:color-mix(in srgb,var(--sys-tuerkis) 16%,transparent);--tuerkis-t:var(--txt-tuerkis);
+  --blau-f:color-mix(in srgb,var(--sys-blau) 14%,transparent);--blau-t:var(--txt-blau);
+  --violett-f:color-mix(in srgb,var(--sys-indigo) 16%,transparent);--violett-t:var(--txt-indigo);
+  --lila-f:color-mix(in srgb,var(--sys-lila) 16%,transparent);--lila-t:var(--txt-lila);
+  --grau-f:var(--flaeche2);--grau-t:var(--leise);
+  /* Schrift: Stufen wie Dynamic Type (Handy) – am großen Bildschirm etwas kleiner (wie iPad/Mac) */
+  --schrift:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,Roboto,"Helvetica Neue",sans-serif;
+  --schrift-rund:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+  --t-gross:34px;--t-titel1:28px;--t-titel2:22px;--t-titel3:20px;--t-kopf:17px;--t-text:17px;--t-callout:16px;--t-unter:15px;--t-fuss:13px;--t-klein:12px;--t-mini:11px;
+  /* Maße */
+  --r-zelle:26px;--r-feld:12px;--r-knopf:999px;--r-kachel:18px;--r-sheet:34px;
+  --rand-seite:16px;--kopf-hoehe:52px;--nav-breite:260px;--tab-hoehe:62px;
+  --feder:cubic-bezier(.2,.9,.25,1.12);--weich:cubic-bezier(.2,.8,.2,1);
+  font:400 var(--t-text)/1.29 var(--schrift);letter-spacing:-.01em;
+}
+@media (min-width:900px){:root{--t-gross:30px;--t-titel1:24px;--t-titel2:20px;--t-titel3:18px;--t-kopf:15px;--t-text:15px;--t-callout:14px;--t-unter:14px;--t-fuss:12px;--t-klein:11.5px;--t-mini:10.5px;--r-zelle:18px;--r-feld:9px;--r-kachel:14px;--rand-seite:28px}}
+
+/* alte Namen dieser App → Apple-Tokens (auch für Stile direkt im HTML) */
+:root{--panel:var(--flaeche);--fg:var(--text);--muted:var(--leise);--line:var(--linie);--accent:var(--marke);--accent-fg:#fff;--ok:var(--txt-gruen);--warn:var(--txt-orange);--soft:var(--flaeche2)}
 *{box-sizing:border-box}
-html{background:var(--bg)} /* auch hinter dem Seitenende (Handy: Überscrollen, Browserleiste) */
-body{margin:0;background:var(--bg);color:var(--fg);min-height:100vh}
-header{display:flex;align-items:center;gap:24px;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap;position:sticky;top:0;z-index:5}
-header h1{font-size:17px;margin:0;font-weight:650}
-header h1 small{color:var(--muted);font-weight:400;margin-left:6px}
-nav{display:flex;gap:4px;flex-wrap:wrap}
-nav button{background:none;border:0;padding:8px 14px;border-radius:8px;font:inherit;color:var(--muted);cursor:pointer}
-nav button.on{background:var(--soft);color:var(--fg);font-weight:600}
-main{max-width:1500px;margin:0 auto;padding:20px 24px 80px}
+html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%} /* auch hinter dem Seitenende (Handy: Überscrollen, Browserleiste) */
+body{margin:0;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--primaer) 55%,transparent);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--primaer) 28%,transparent)}
+/* ===== Kopfleiste: Glas, Reiter als Segmente ===== */
+header{display:flex;align-items:center;gap:20px;padding:10px max(24px,env(safe-area-inset-right)) 10px max(24px,env(safe-area-inset-left));flex-wrap:wrap;position:sticky;top:0;z-index:5;box-shadow:0 .5px 0 var(--linie)}
+/* Glas der Kopfleiste als eigene Ebene: ein backdrop-filter am header selbst würde die fest positionierte Tab-Leiste (Handy) in ihm einsperren */
+header::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--glas);-webkit-backdrop-filter:var(--unschaerfe);backdrop-filter:var(--unschaerfe)}
+header h1{font-size:var(--t-kopf);margin:0;font-weight:700;letter-spacing:-.01em}
+header h1 small{color:var(--leise);font-weight:400;margin-left:6px;font-size:var(--t-fuss)}
+nav{display:flex;gap:2px;padding:3px;border-radius:999px;position:relative;background:var(--glas);border:1px solid var(--glas-rand);
+  -webkit-backdrop-filter:var(--linse,) var(--unschaerfe);backdrop-filter:var(--linse,) var(--unschaerfe);box-shadow:inset 0 1px 0 var(--glas-licht),var(--schatten)}
+nav button{background:none;border:0;padding:7px 16px;border-radius:999px;color:var(--text);cursor:pointer;font-weight:500;font-size:var(--t-unter);white-space:nowrap;transition:background-color .2s,color .2s}
+nav button.on{background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--marke);font-weight:600;box-shadow:inset 0 1px 0 var(--glas-licht)}
+nav button::before{content:none}
+main{max-width:1500px;margin:0 auto;padding:22px max(24px,env(safe-area-inset-right)) 80px max(24px,env(safe-area-inset-left))}
 section[hidden]{display:none}
-h2{font-size:17px;margin:0 0 12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+h2{font-size:var(--t-titel3);font-weight:700;letter-spacing:-.015em;margin:0 0 14px}
+/* ===== Inhalt: gruppierte Flächen ===== */
+.card{background:var(--flaeche);border-radius:var(--r-zelle);padding:18px 20px;margin-bottom:18px}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
-label.check{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--fg)}
-input,select,textarea{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
-input[type=number]{width:70px}
-input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
-button.b{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:7px 14px;cursor:pointer;white-space:nowrap}
-button.b:hover{background:var(--soft)}
-button.b:disabled{opacity:.5;cursor:default}
-button.p{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
-button.p:hover{filter:brightness(1.08);background:var(--accent)}
-button.i{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:15px}
-button.i:hover{background:var(--soft);color:var(--fg)}
+label{display:flex;flex-direction:column;gap:6px;font-size:var(--t-fuss);color:var(--leise);font-weight:500}
+label.check{display:block;font-size:var(--t-unter);color:var(--text);font-weight:400;line-height:1.35;padding:9px 0} /* Fließtext mit <b> bleibt eine Zeile (kein Zerfallen in Spalten) */
+label.check input[type=checkbox]{vertical-align:-6px;margin:0 10px 0 0}
+input,select,textarea{color:var(--text);background:var(--flaeche2);border:0;border-radius:var(--r-feld);padding:9px 12px;min-height:40px;min-width:0;font-size:var(--t-unter);outline:0}
+textarea{line-height:1.4}
+select{-webkit-appearance:none;appearance:none;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 16'%3E%3Cpath d='M2 6l3-3 3 3M2 10l3 3 3-3' fill='none' stroke='%238E8E93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:10px 16px}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--marke) 35%,transparent)}
+input::placeholder,textarea::placeholder{color:var(--leise3)}
+input[type=number]{width:80px}
+input[type=checkbox]{width:22px;height:22px;min-height:0;padding:0;accent-color:var(--marke)}
+/* Knöpfe: Pillen aus Glas, Hauptaktion in der Markenfarbe */
+button.b,label.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 18px;border-radius:999px;cursor:pointer;white-space:nowrap;position:relative;
+  font-weight:500;font-size:var(--t-unter);color:var(--text);background:var(--glas);border:1px solid var(--glas-rand);
+  -webkit-backdrop-filter:var(--linse,) var(--unschaerfe);backdrop-filter:var(--linse,) var(--unschaerfe);box-shadow:inset 0 1px 0 var(--glas-licht),0 1px 3px rgba(0,0,0,.08)}
+button.b:disabled{opacity:.45;cursor:default}
+button.p{background:var(--marke);border-color:transparent;color:#fff;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 14px color-mix(in srgb,var(--marke) 30%,transparent)}
+button.i{border:0;background:none;color:var(--leise);cursor:pointer;min-width:32px;min-height:32px;padding:4px 8px;border-radius:999px;font-size:15px}
+button.i:hover{background:var(--flaeche2);color:var(--text)}
+@media (prefers-reduced-motion:no-preference){
+  button.b,label.b,button.i{transition:transform .25s var(--feder),background-color .2s,box-shadow .25s}
+  button.b:active,label.b:active{transform:scale(.96)}
+}
+/* ===== Tabellen: ruhig, Haarlinien ===== */
 .wrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
-th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);text-align:left;padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
-td input{width:100%}
+th{font-size:var(--t-fuss);font-weight:600;color:var(--leise);text-align:left;padding:8px 6px;border-bottom:.5px solid var(--linie);white-space:nowrap}
+td{padding:6px;border-bottom:.5px solid var(--linie);vertical-align:middle}
+tr:last-child>td{border-bottom:0}
+td input,td select{width:100%;min-height:34px;padding:6px 8px}
 td.num,th.num{text-align:right}
-.muted{color:var(--muted)}
-.small{font-size:12px}
+.muted{color:var(--leise)}
+.small{font-size:var(--t-fuss)}
 .tot{font-weight:650;white-space:nowrap}
-.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted);white-space:nowrap}
-.pill.ok{color:var(--ok)} .pill.warn{color:var(--warn)} .pill.acc{color:var(--accent)}
-.pill.fest{background:#c62828;color:#fff;font-weight:700} tr.fest{background:rgba(198,40,40,.10)} tr.fest>td:first-child{box-shadow:inset 4px 0 #c62828}
-.pill.filterm{background:#2e7d32;color:#fff;font-weight:700} tr.filterm{background:rgba(46,125,50,.14)} tr.filterm>td:first-child{box-shadow:inset 4px 0 #2e7d32}
-.sum{display:flex;gap:24px;align-items:center;justify-content:flex-end;padding-top:12px;flex-wrap:wrap}
-.sum b{font-size:20px}
-.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-radius:10px;background:var(--soft);margin-top:12px}
+/* Kennzeichen (Abzeichen): zarte Fläche in Systemfarbe */
+.pill{display:inline-block;font-size:var(--t-klein);font-weight:600;padding:3px 9px;border-radius:99px;background:var(--grau-f);color:var(--grau-t);white-space:nowrap}
+p > .pill{white-space:normal;border-radius:12px;padding:7px 12px;line-height:1.35;font-size:var(--t-fuss)} /* lange Statusmeldungen brechen um statt über den Rand zu ragen */
+.pill.ok{background:var(--gruen-f);color:var(--gruen-t)} .pill.warn{background:var(--orange-f);color:var(--orange-t)} .pill.acc{background:var(--rot-f);color:var(--rot-t)}
+.pill.fest{background:var(--sys-rot);color:#fff;font-weight:700} tr.fest{background:var(--rot-f)} tr.fest>td:first-child{box-shadow:inset 4px 0 var(--sys-rot)}
+.pill.filterm{background:var(--sys-gruen);color:#fff;font-weight:700} tr.filterm{background:var(--gruen-f)} tr.filterm>td:first-child{box-shadow:inset 4px 0 var(--sys-gruen)}
+.sum{display:flex;gap:12px 20px;align-items:center;justify-content:flex-end;padding-top:14px;flex-wrap:wrap}
+.sum b{font:700 var(--t-titel2) var(--schrift-rund);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-radius:var(--r-kachel);background:var(--blau-f);color:var(--text);margin-top:12px}
 .banner[hidden]{display:none}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;z-index:20}
-#toast.on{opacity:1}
-dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--fg);padding:20px;width:min(640px,94vw)}
-dialog::backdrop{background:#0006}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+/* Meldung: Glas-Pille */
+#toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);padding:12px 20px;border-radius:999px;opacity:0;pointer-events:none;max-width:90vw;z-index:20;
+  background:var(--glas-dicht);color:var(--text);border:1px solid var(--glas-rand);-webkit-backdrop-filter:var(--linse,) var(--unschaerfe);backdrop-filter:var(--linse,) var(--unschaerfe);
+  box-shadow:inset 0 1px 0 var(--glas-licht),var(--schatten-gross);font-size:var(--t-unter);font-weight:500;transition:opacity .25s,transform .35s var(--weich)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+/* Sheets: dichtes Glas (Formulare bleiben lesbar), Rand bricht */
+dialog{border:1px solid var(--glas-rand);border-radius:var(--r-sheet);background:var(--glas-dicht);color:var(--text);padding:24px;width:min(640px,94vw);max-height:calc(100dvh - 32px);
+  -webkit-backdrop-filter:var(--linse,) blur(30px) saturate(180%);backdrop-filter:var(--linse,) blur(30px) saturate(180%);box-shadow:inset 0 1px 0 var(--glas-licht),var(--schatten-gross)}
+dialog::backdrop{background:rgba(0,0,0,.28)}
+dialog h2{text-align:center}
+@media (prefers-reduced-motion:no-preference){dialog[open]{animation:sheet .45s cubic-bezier(.2,.95,.25,1.04)}}
+@keyframes sheet{from{opacity:0;transform:translateY(24px) scale(.97)}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .full{grid-column:1/-1}
 .kmcell{display:flex;gap:4px;align-items:center}
-.hint{font-size:12px;color:var(--muted);margin:6px 0 0}
-.formula{font-family:Consolas,monospace;padding:10px 12px;border-left:3px solid var(--accent);background:var(--soft);border-radius:4px;margin-top:12px}
-tr.done td{opacity:.6}
+.hint{font-size:var(--t-fuss);color:var(--leise);margin:8px 0 0;line-height:1.4}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--t-fuss);padding:12px 14px;background:var(--flaeche2);border-radius:var(--r-feld);margin-top:12px}
+tr.done td{opacity:.55}
 details.preis summary{cursor:pointer;list-style:none;text-decoration:underline dotted;text-underline-offset:3px}
 details.preis summary::-webkit-details-marker{display:none}
 details.preis div{margin-top:4px;text-align:right}
 body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-child,body.nurKunden #dKundeTour,body.nurKunden #lFest{display:none}
-@media (max-width:700px){main{padding:12px 12px 80px}.grid2,.grid4{grid-template-columns:1fr}header{padding:10px 12px}}
 #kTab td.k-preis{white-space:nowrap}
 #kTab td.k-tel a{color:inherit}
+/* ===== Liquid Glass: Lichtkante, Glanz, Maus ===== */
+:is(nav,button.b,label.b,#toast,dialog)::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(var(--licht-winkel,140deg),rgba(255,255,255,.6),rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 55%,rgba(255,255,255,.2));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde mitlaufen */
+:is(nav,button.b,label.b,#toast,dialog) *{--linse:initial}
+/* klares Glas für kleine Bedienelemente (Linse + Glanz machen das Material), dichter bei Text auf großer Fläche */
+:is(nav,button.b:not(.p),label.b){--unschaerfe:blur(2px) saturate(170%) brightness(1.06);--glas:rgba(255,255,255,.5)}
+.lichtbrechung :is(nav,button.b:not(.p),label.b){--unschaerfe:blur(.6px) saturate(175%) brightness(1.07);
+  background-image:radial-gradient(140% 120% at var(--glanz-x,30%) var(--glanz-y,0%),rgba(255,255,255,.24),rgba(255,255,255,.05) 45%,transparent 70%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(nav,button.b:not(.p),label.b){--glas:rgba(44,44,48,.5)}}
+:root[data-theme="dark"] :is(nav,button.b:not(.p),label.b){--glas:rgba(44,44,48,.5)}
+@media (hover:hover) and (pointer:fine){
+  :is(nav button,button.b,label.b):hover{background-image:radial-gradient(circle at var(--mx,50%) var(--my,50%),var(--maus-licht),color-mix(in srgb,var(--maus-licht) 25%,transparent) 35%,transparent 70%)}
+  button.p:hover{filter:brightness(1.06)}
+  @media (prefers-reduced-motion:no-preference){:is(button.b,label.b):hover{transform:translateY(-1px) scale(1.03)}:is(button.b,label.b):hover:active{transform:scale(.97)}}
+}
+@media (prefers-reduced-transparency:reduce){:root{--glas:var(--hoch);--glas-dicht:var(--hoch)}}
+/* ===== Handy ===== */
+@media (max-width:700px){
+  main{padding:14px 14px calc(110px + env(safe-area-inset-bottom))}
+  .grid2,.grid4{grid-template-columns:1fr}
+  header{padding:calc(8px + env(safe-area-inset-top)) 16px 10px;justify-content:center}
+  header h1{text-align:center}
+  .card{padding:16px;border-radius:var(--r-zelle)}
+  /* Reiter als schwebende Tab-Leiste aus Glas (iOS) */
+  nav{position:fixed;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));z-index:8;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:4px;box-shadow:inset 0 1px 0 var(--glas-licht),var(--schatten-gross)}
+  nav{--unschaerfe:blur(7px) saturate(180%) brightness(1.05)!important;--glas:rgba(255,255,255,.66)!important} /* Tab-Leiste liegt über allem Inhalt: etwas dichter, damit Schrift darunter nicht stört */
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) nav{--glas:rgba(36,36,40,.66)!important}}
+  nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px 6px;font-size:10.5px;font-weight:600;min-width:0;overflow-wrap:anywhere;text-align:center;line-height:1.15}
+  nav button::before{content:"";width:24px;height:24px;background:currentColor;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
+  nav button[data-tab=tour]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2'/%3E%3Cpath d='M15 18H9'/%3E%3Cpath d='M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3Ccircle cx='7' cy='18' r='2'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2'/%3E%3Cpath d='M15 18H9'/%3E%3Cpath d='M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3Ccircle cx='7' cy='18' r='2'/%3E%3C/svg%3E")}
+  nav button[data-tab=kunden]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Cpath d='M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Cpath d='M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/svg%3E")}
+  nav button[data-tab=archiv]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='5' x='2' y='3' rx='1'/%3E%3Cpath d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8'/%3E%3Cpath d='M10 12h4'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='5' x='2' y='3' rx='1'/%3E%3Cpath d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8'/%3E%3Cpath d='M10 12h4'/%3E%3C/svg%3E")}
+  nav button[data-tab=einst]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E")}
+  body.nurKunden nav{display:none}
+  dialog{margin:auto 0 0;width:100vw;max-width:100vw;border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+  @media (prefers-reduced-motion:no-preference){dialog[open]{animation:sheet-unten .5s cubic-bezier(.2,.95,.25,1.04)}}
+  input,select,textarea{min-height:44px;font-size:16px} /* 16 px: iPhone zoomt beim Tippen nicht hinein */
+  button.b,label.b{min-height:44px}
+}
+@keyframes sheet-unten{from{transform:translateY(100%)}}
 /* Handy: Kundenliste als Karten statt breiter Tabelle */
 @media (max-width:700px){
   header h1 small{display:none}
@@ -108,10 +248,6 @@ body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-c
   #kTab .k-akt{order:9;flex-basis:100%}
   #kTab .k-tel a{color:var(--accent)}
   details.preis div{font-weight:400}
-  /* Kopf: Reiter in einer Zeile, seitlich wischbar */
-  header{gap:8px 16px}
-  nav{flex-wrap:nowrap;overflow-x:auto;max-width:100%}
-  nav button{padding:8px 8px;white-space:nowrap;font-size:14px}
   .row>label{flex:1 1 140px}
   .sum{justify-content:stretch}
   .sum>button{flex:1 1 45%}
@@ -1906,6 +2042,88 @@ $('#dFreigeben').onclick = async () => {
 };
 
 renderTour(); renderKunden();
+// shortcut: Liquid-Glass-Funktionen aus Ayse CRM (aysetransport/test, web/index.html) kopiert – dort ändern, hier nachziehen
+/**
+ * Echtes Liquid Glass: (1) Lichtbrechung – jedes Glas-Bedienelement bekommt einen SVG-Filter mit Verschiebungskarte, der den
+ * Hintergrund am Rand nach innen bricht wie eine gewölbte Linse (backdrop-filter: url(), nur Chromium; Safari/iPhone zeigt
+ * weiter Milchglas). (2) Licht – Glanzkante und Glanzlicht folgen der Neigung des Geräts (iPhone fragt beim ersten Tippen
+ * nach der Erlaubnis), am PC der Maus. Aus bei „Bewegung reduzieren“ bzw. „Transparenz reduzieren“.
+ */
+function glasLicht(wurzel = document.documentElement) {
+  // Ziel (aus Sensor bzw. Maus) und angezeigter Wert getrennt: das Licht gleitet weich hinterher, statt jedem Zittern zu folgen
+  let zx = -0.35, zy = -0.8, x = zx, y = zy, laeuft = 0;
+  const setzen = () => {
+    wurzel.style.setProperty('--licht-winkel', `${(Math.atan2(-x, y) * 180 / Math.PI).toFixed(1)}deg`); // Verlauf beginnt auf der Lichtseite
+    wurzel.style.setProperty('--glanz-x', `${(50 + x * 45).toFixed(1)}%`); wurzel.style.setProperty('--glanz-y', `${(50 + y * 50).toFixed(1)}%`); };
+  const schritt = () => {
+    x += (zx - x) * 0.06; y += (zy - y) * 0.06; setzen(); // ~0,8 s bis zur neuen Lage
+    laeuft = Math.abs(zx - x) + Math.abs(zy - y) > 0.003 ? requestAnimationFrame(schritt) : 0;
+  };
+  const licht = (nx, ny) => {
+    nx = Math.max(-1, Math.min(1, nx)); ny = Math.max(-1, Math.min(1, ny));
+    if (Math.abs(nx - zx) + Math.abs(ny - zy) < 0.02) return; // kleines Zittern der Hand ignorieren
+    zx = nx; zy = ny; if (!laeuft) laeuft = requestAnimationFrame(schritt);
+  };
+  setzen();
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // Neigung: gamma = links/rechts, beta = vor/zurück (normal gehalten ~45°); bewusst schwach – erst deutliches Kippen bewegt das Licht spürbar
+  addEventListener('deviceorientation', e => { if (e.gamma != null) licht(-0.35 - e.gamma / 90, -0.8 + (e.beta - 45) / 150); }, { passive: true });
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function')
+    addEventListener('touchend', () => DeviceOrientationEvent.requestPermission().catch(() => {}), { once: true }); // iPhone: nur nach einer Berührung erlaubt
+  if (matchMedia('(pointer:fine)').matches) addEventListener('pointermove', e => licht(-0.35 + (e.clientX / innerWidth - 0.5) * 0.9, -0.8 + (e.clientY / innerHeight - 0.5) * 0.6), { passive: true });
+}
+/** Verschiebungskarte einer abgerundeten Fläche (w × h, Radius r): Rot/Grün = Verschiebung nach innen, stark am Rand, innen keine. */
+function linsenKarte(w, h, r, rand) {
+  const k = Math.min(1, 160 / Math.max(w, h)), cw = Math.max(2, Math.round(w * k)), ch = Math.max(2, Math.round(h * k));
+  const c = Object.assign(document.createElement('canvas'), { width: cw, height: ch }), x2 = c.getContext('2d'), bild = x2.createImageData(cw, ch), d = bild.data;
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+    const px = (x + 0.5) / k - w / 2, py = (y + 0.5) / k - h / 2, qx = Math.abs(px) - (w / 2 - r), qy = Math.abs(py) - (h / 2 - r);
+    const aussen = Math.hypot(Math.max(qx, 0), Math.max(qy, 0)), tiefe = -(aussen + Math.min(Math.max(qx, qy), 0) - r); // Abstand zum Rand (innen positiv)
+    let nx = 0, ny = 0;
+    if (qx > 0 && qy > 0) { nx = Math.sign(px) * qx / aussen; ny = Math.sign(py) * qy / aussen; } else if (qx > qy) nx = Math.sign(px); else ny = Math.sign(py);
+    const st = tiefe <= 0 ? 0 : tiefe < rand ? (1 - tiefe / rand) ** 2 : 0, i = (y * cw + x) * 4;
+    d[i] = 128 - nx * st * 127; d[i + 1] = 128 - ny * st * 127; d[i + 2] = 128; d[i + 3] = 255;
+  }
+  x2.putImageData(bild, 0, 0);
+  return c.toDataURL();
+}
+function glasLinsen(auswahl) {
+  const ua = navigator.userAgent;
+  if (!/Chrome\/\d/.test(ua) || /CriOS|EdgiOS/.test(ua) || matchMedia('(prefers-reduced-transparency: reduce)').matches) return; // Safari kann url() im backdrop-filter nicht
+  document.documentElement.classList.add('lichtbrechung');
+  const NS = 'http://www.w3.org/2000/svg', svg = document.createElementNS(NS, 'svg'), linsen = new WeakMap(); let nr = 0;
+  const aktiv = new Set(); // Elemente mit Linse – neu gezeichnete (entfernte) geben ihren Filter wieder frei
+  svg.setAttribute('aria-hidden', 'true'); svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden'; document.body.append(svg);
+  const linse = el => {
+    const w = Math.round(el.offsetWidth), h = Math.round(el.offsetHeight); if (!w || !h) return;
+    const r = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, w / 2, h / 2), rand = Math.max(10, Math.min(r || 18, 32, Math.min(w, h) / 2));
+    let f = linsen.get(el);
+    if (!f) {
+      const id = `glas-linse-${++nr}`, filter = document.createElementNS(NS, 'filter');
+      filter.id = id; filter.setAttribute('color-interpolation-filters', 'sRGB');
+      filter.innerHTML = '<feImage x="0" y="0" preserveAspectRatio="none" result="karte"/><feDisplacementMap in="SourceGraphic" in2="karte" xChannelSelector="R" yChannelSelector="G"/>';
+      svg.append(filter); f = { filter }; linsen.set(el, f); aktiv.add(el); el.style.setProperty('--linse', `url(#${id})`);
+    }
+    if (f.w === w && f.h === h && f.r === r) return;
+    Object.assign(f, { w, h, r });
+    const bildEl = f.filter.firstChild; bildEl.setAttribute('width', w); bildEl.setAttribute('height', h); bildEl.setAttribute('href', linsenKarte(w, h, r, rand));
+    f.filter.lastChild.setAttribute('scale', String(Math.round(rand * 2.2)));
+  };
+  const beob = new ResizeObserver(l => { for (const e of l) linse(e.target); });
+  let geplant = 0;
+  const suchen = () => { geplant = 0;
+    for (const el of aktiv) if (!el.isConnected) { linsen.get(el).filter.remove(); beob.unobserve(el); aktiv.delete(el); }
+    for (const el of document.querySelectorAll(auswahl)) if (!linsen.has(el)) { beob.observe(el); linse(el); } };
+  new MutationObserver(() => { if (!geplant) geplant = requestAnimationFrame(suchen); }).observe(document.body, { childList: true, subtree: true });
+  suchen();
+}
+glasLicht(); glasLinsen('nav, button.b, label.b, #toast, dialog');
+if (matchMedia('(hover:hover) and (pointer:fine)').matches) { // Maus über Glas: Lichtfleck folgt dem Zeiger
+  let warte = 0, letzt = null;
+  addEventListener('pointermove', e => { letzt = e; if (!warte) warte = requestAnimationFrame(() => { warte = 0;
+    const g = letzt.target.closest && letzt.target.closest('nav button, button.b, label.b'); if (!g) return;
+    const r = g.getBoundingClientRect(); g.style.setProperty('--mx', `${letzt.clientX - r.left}px`); g.style.setProperty('--my', `${letzt.clientY - r.top}px`); }); }, { passive: true });
+}
 window.__appBereit = true;
 dateiStart();
 </script>
