@@ -342,7 +342,13 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #aTab .a-akt{order:6;flex-basis:100%;display:flex;gap:8px;white-space:normal!important}
   #aTab .a-akt .b{flex:1;white-space:normal}
   /* Kunden: jede Zeile eine ruhige Zelle; Markierungen (fest / Filiale) als getönte Karte mit Farbstreifen */
-  #kTab tr{gap:4px 10px;padding:14px 4px}
+  /* Kundenliste: jeder Kunde eine eigene Karte; Markierung als Farbstreifen + Abzeichen auf der Karte (Karte selbst bleibt weiß) */
+  #kunden .card:has(#kTab){background:none;padding:0}
+  #kTab tr{gap:4px 10px;padding:16px 16px 12px;margin:0 0 10px;background:var(--flaeche);border-radius:var(--r-zelle);border-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  #kTab tr.fest,#kTab tr.filterm{background:var(--flaeche)}
+  #kTab tr.fest{box-shadow:inset 5px 0 var(--sys-rot),0 1px 3px rgba(0,0,0,.05)} #kTab tr.filterm{box-shadow:inset 5px 0 var(--sys-gruen),0 1px 3px rgba(0,0,0,.05)}
+  #kTab tr.fest>td:first-child,#kTab tr.filterm>td:first-child{box-shadow:none}
+  #kInfo{padding:0 6px}
   #kunden .row > .b,#tour .row > .b{flex:1 1 calc(50% - 6px)} /* Knöpfe unter den Feldern füllen die Breite */
   #kTab .k-name{font-size:var(--t-kopf);flex:1 1 calc(100% - 160px)!important;min-width:0} /* Preis bleibt in der Namenszeile, auch in getönten Zeilen */
   #kTab .k-name b{font-weight:600}
@@ -353,9 +359,9 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #kTab .k-stat{display:flex;align-items:center;gap:6px}
   #kTab .k-akt{display:flex;justify-content:flex-end;gap:4px;margin-top:2px}
   #kTab button.i{width:40px;height:40px;background:var(--flaeche2)}
-  #kTab tr.fest,#kTab tr.filterm,#tTab tr.fest,#tTab tr.filterm{border-radius:16px;padding-left:14px;padding-right:12px;margin:6px 0;border-bottom:0}
-  #kTab tr.fest,#tTab tr.fest{box-shadow:inset 4px 0 var(--sys-rot)} #kTab tr.filterm,#tTab tr.filterm{box-shadow:inset 4px 0 var(--sys-gruen)}
-  #kTab tr.fest>td:first-child,#kTab tr.filterm>td:first-child,#tTab tr.fest>td:first-child,#tTab tr.filterm>td:first-child{box-shadow:none}
+  #tTab tr.fest,#tTab tr.filterm{border-radius:16px;padding-left:14px;padding-right:12px;margin:6px 0;border-bottom:0}
+  #tTab tr.fest{box-shadow:inset 4px 0 var(--sys-rot)} #tTab tr.filterm{box-shadow:inset 4px 0 var(--sys-gruen)}
+  #tTab tr.fest>td:first-child,#tTab tr.filterm>td:first-child{box-shadow:none}
   /* Tagestour: Felder in Karten-Größe (16 px, damit das iPhone nicht hineinzoomt), Name über die ganze Breite */
   #tTab td input:not([type=checkbox]),#tTab td select{min-height:40px;font-size:16px;padding:7px 10px}
   #tTab .t-name{flex:1 1 0!important;min-width:0!important}
