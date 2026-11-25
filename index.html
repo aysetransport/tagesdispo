@@ -90,6 +90,12 @@ window.addEventListener('load', () => { if (!window.__appBereit) zeigeFehler('Ha
 }
 @media (min-width:900px){:root{--t-gross:30px;--t-titel1:24px;--t-titel2:20px;--t-titel3:18px;--t-kopf:15px;--t-text:15px;--t-callout:14px;--t-unter:14px;--t-fuss:12px;--t-klein:11.5px;--t-mini:10.5px;--r-zelle:18px;--r-feld:9px;--r-kachel:14px;--rand-seite:28px}}
 
+/* Schrift: auf iPhone/Mac die Systemschrift (SF), sonst Inter (eingebettet, SIL OFL – schrift/OFL-Inter.txt) statt Segoe UI/Roboto,
+   die neben dem Apple-Design fremd wirken. Liegt im Projekt, damit kein Abruf bei Google nötig ist (Datenschutz). */
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url(schrift/inter.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--schrift:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;--schrift-rund:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif;
+  font-family:var(--schrift)}
 /* Akzent dieser App: Marineblau statt Markenrot (im Dunkeln heller, damit lesbar). Rot bleibt nur Warnung/„fest terminiert“. */
 :root{--marke:#1D3A6E;--primaer:var(--marke)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--marke:#6E9BEF;--auf-marke:#0B1730}}
@@ -143,7 +149,8 @@ button.i:hover{background:var(--flaeche2);color:var(--text)}
 }
 /* ===== Tabellen: ruhig, Haarlinien ===== */
 .wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%}
+:is(td.num,.tot,td.a-sum,td.k-preis,.sum b,#kTab td.k-dat,#aTab td.a-dat){font-variant-numeric:tabular-nums} /* gleich breite Ziffern nur bei Zahlen – sonst bekommen Bindestriche Luft */
 th{font-size:var(--t-fuss);font-weight:600;color:var(--leise);text-align:left;padding:8px 6px;border-bottom:.5px solid var(--linie);white-space:nowrap}
 td{padding:6px;border-bottom:.5px solid var(--linie);vertical-align:middle}
 tr:last-child>td{border-bottom:0}
@@ -179,7 +186,7 @@ dialog h2{text-align:center}
 .full{grid-column:1/-1}
 .kmcell{display:flex;gap:4px;align-items:center}
 .hint{font-size:var(--t-fuss);color:var(--leise);margin:8px 0 0;line-height:1.4}
-.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--t-fuss);padding:12px 14px;background:var(--flaeche2);border-radius:var(--r-feld);margin-top:12px}
+.formula{font-variant-numeric:tabular-nums;font-size:var(--t-unter);padding:12px 14px;background:var(--flaeche2);border-radius:var(--r-feld);margin-top:12px}
 tr.done td{opacity:.55}
 details.preis summary{cursor:pointer;list-style:none;text-decoration:underline dotted;text-underline-offset:3px}
 details.preis summary::-webkit-details-marker{display:none}
