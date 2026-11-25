@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Tagesdispo – App-Symbol nach Apples Richtlinien: ein Motiv (Tagestour: gepunktete Route vom Start zum Ziel), kein Text,
+       Raster 1024, Motiv in der Sicherheitszone (Masken von iOS und Android), Ebenen: Hintergrund (Marineblau) · Route (weiß) · Stopps.
+       Quelle für tools/icons.js. -->
+  <defs>
+    <linearGradient id="hintergrund" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3D66B8"/><stop offset="1" stop-color="#14295A"/></linearGradient>
+    <radialGradient id="licht" cx=".28" cy=".06" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".26"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="weg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".78"/><stop offset="1" stop-color="#fff"/></linearGradient>
+  </defs>
+  <g id="ebene-hintergrund"><rect width="1024" height="1024" fill="url(#hintergrund)"/><rect width="1024" height="1024" fill="url(#licht)"/></g>
+  <g id="ebene-motiv" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M462 724 C620 724 520 560 652 556" stroke="url(#weg)" stroke-width="60" stroke-dasharray="1 92"/>
+    <circle cx="318" cy="724" r="56" stroke="#fff" stroke-width="38"/>
+    <path d="M676 196c-72 0-130 58-130 130 0 92 130 218 130 218s130-126 130-218c0-72-58-130-130-130z" fill="#fff" stroke="none"/>
+    <circle cx="676" cy="326" r="48" fill="#1D3A6E" stroke="none"/>
+  </g>
+</svg>
