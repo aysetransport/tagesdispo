@@ -361,7 +361,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #aTab .a-akt .b{flex:1;white-space:normal}
   /* Kunden: jede Zeile eine ruhige Zelle; Markierungen (fest / Filiale) als getönte Karte mit Farbstreifen */
   /* Kundenliste: jeder Kunde eine eigene Karte; Markierung als Farbstreifen + Abzeichen auf der Karte (Karte selbst bleibt weiß) */
-  #kunden .card:has(#kTab){background:none;padding:0}
+  #kunden .listen-karte{background:none;padding:0} /* ohne :has – läuft auch in älteren Browsern */
   #kTab tr{gap:4px 10px;padding:16px 16px 12px;margin:0 0 10px;background:var(--flaeche);border-radius:var(--r-zelle);border-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
   #kTab tr.fest,#kTab tr.filterm{background:var(--flaeche)}
   #kTab tr.fest{box-shadow:inset 5px 0 var(--sys-rot),0 1px 3px rgba(0,0,0,.05)} #kTab tr.filterm{box-shadow:inset 5px 0 var(--sys-gruen),0 1px 3px rgba(0,0,0,.05)}
@@ -387,8 +387,8 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #tTab input[type=time]{width:calc(50% - 3px)!important}
   #tTab .t-move,#tTab .t-rm{width:auto;display:flex}
   /* Archiv: jede erzeugte Tour eine eigene Karte */
-  #archiv .card:has(#aTab){background:none;padding:0}
-  #archiv .card:has(#aTab) > h2{padding:0 4px}
+  #archiv .listen-karte{background:none;padding:0}
+  #archiv .listen-karte > h2{padding:0 4px}
   #aTab tr{gap:6px 12px;padding:16px;margin:0 0 10px;background:var(--flaeche);border-radius:var(--r-zelle);border-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.05);align-items:baseline}
   #aTab td.a-dat{order:1;font-size:var(--t-kopf)}
   #aTab td.a-sum{order:2;font-size:var(--t-kopf);margin-left:auto}
@@ -477,7 +477,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
       <button class="b p" id="kNeu"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Kunde anlegen</button>
     </div>
   </div>
-  <div class="card">
+  <div class="card listen-karte">
     <div class="wrap"><table id="kTab">
       <thead><tr><th>Lieferdatum</th><th>Zeit</th><th>Name</th><th>Adresse</th><th>Telefon</th><th>Auftragsnr.</th><th class="num">Etage</th><th class="num">Entsorg.</th><th class="num">Preis</th><th>Status</th><th>Notiz</th><th></th></tr></thead>
       <tbody></tbody>
@@ -498,7 +498,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
     </div>
     <p class="hint">Rechnung an Seats and Sofas GmbH (Bochum) über alle Kunden mit Häkchen „intern“, deren Lieferdatum im gewählten Monat liegt – je Kunde der Preis „Interne Lieferung“ (Einstellungen → Preisformel).</p>
   </div>
-  <div class="card">
+  <div class="card listen-karte">
     <h2>Erzeugte Touren</h2>
     <div class="wrap"><table id="aTab">
       <thead><tr><th>Datum</th><th>Filiale</th><th>Rechnungen</th><th class="num">Aufträge</th><th class="num">Summe</th><th>Kunden</th><th></th></tr></thead>
