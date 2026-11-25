@@ -103,14 +103,14 @@ button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--primaer) 55%,transparent);outline-offset:2px}
 ::selection{background:color-mix(in srgb,var(--primaer) 28%,transparent)}
 /* ===== Kopfleiste: Glas, Reiter als Segmente ===== */
-header{display:flex;align-items:center;gap:20px;padding:10px max(24px,env(safe-area-inset-right)) 10px max(24px,env(safe-area-inset-left));flex-wrap:wrap;position:sticky;top:0;z-index:5;box-shadow:0 .5px 0 var(--linie)}
+header{display:flex;align-items:center;gap:24px;min-height:68px;padding:12px max(28px,env(safe-area-inset-right)) 12px max(28px,env(safe-area-inset-left));flex-wrap:wrap;position:sticky;top:0;z-index:5;box-shadow:0 .5px 0 var(--linie)}
 /* Glas der Kopfleiste als eigene Ebene: ein backdrop-filter am header selbst würde die fest positionierte Tab-Leiste (Handy) in ihm einsperren */
 header::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--glas);-webkit-backdrop-filter:var(--unschaerfe);backdrop-filter:var(--unschaerfe)}
-header h1{font-size:var(--t-kopf);margin:0;font-weight:700;letter-spacing:-.01em}
-header h1 small{color:var(--leise);font-weight:400;margin-left:6px;font-size:var(--t-fuss)}
+header h1{font-size:var(--t-titel3);margin:0;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+header h1 small{display:block;color:var(--leise);font-weight:500;font-size:var(--t-fuss);letter-spacing:0;margin-top:2px}
 nav{display:flex;gap:2px;padding:3px;border-radius:999px;position:relative;background:var(--glas);border:1px solid var(--glas-rand);
   -webkit-backdrop-filter:var(--linse,) var(--unschaerfe);backdrop-filter:var(--linse,) var(--unschaerfe);box-shadow:inset 0 1px 0 var(--glas-licht),var(--schatten)}
-nav button{background:none;border:0;padding:7px 16px;border-radius:999px;color:var(--text);cursor:pointer;font-weight:500;font-size:var(--t-unter);white-space:nowrap;transition:background-color .2s,color .2s}
+nav button{background:none;border:0;padding:9px 18px;border-radius:999px;color:var(--text);cursor:pointer;font-weight:500;font-size:var(--t-unter);white-space:nowrap;transition:background-color .2s,color .2s}
 nav button.on{background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--marke);font-weight:600;box-shadow:inset 0 1px 0 var(--glas-licht)}
 nav button::before{content:none}
 main{max-width:1500px;margin:0 auto;padding:22px max(24px,env(safe-area-inset-right)) 80px max(24px,env(safe-area-inset-left))}
@@ -263,8 +263,8 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
 @media (max-width:700px){
   main{padding:14px 14px calc(110px + env(safe-area-inset-bottom))}
   .grid2,.grid4{grid-template-columns:1fr}
-  header{padding:calc(8px + env(safe-area-inset-top)) 16px 10px;justify-content:center}
-  header h1{text-align:center}
+  header{min-height:0;padding:calc(14px + env(safe-area-inset-top)) 20px 14px;justify-content:center}
+  header h1{text-align:center;font-size:var(--t-titel2)}
   .card{padding:16px;border-radius:var(--r-zelle)}
   /* Reiter als schwebende Tab-Leiste aus Glas (iOS) */
   nav{position:fixed;left:calc(12px + env(safe-area-inset-left));right:calc(12px + env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom));z-index:8;
@@ -287,7 +287,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
 @keyframes sheet-unten{from{transform:translateY(100%)}}
 /* Handy: Kundenliste als Karten statt breiter Tabelle */
 @media (max-width:700px){
-  header h1 small{display:none}
+  header h1 small{font-size:var(--t-klein)} /* Firmenzeile auch am Handy unter dem Titel */
   #kTab thead{display:none}
   #kTab,#kTab tbody{display:block}
   #kTab tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
