@@ -90,6 +90,10 @@ window.addEventListener('load', () => { if (!window.__appBereit) zeigeFehler('Ha
 }
 @media (min-width:900px){:root{--t-gross:30px;--t-titel1:24px;--t-titel2:20px;--t-titel3:18px;--t-kopf:15px;--t-text:15px;--t-callout:14px;--t-unter:14px;--t-fuss:12px;--t-klein:11.5px;--t-mini:10.5px;--r-zelle:18px;--r-feld:9px;--r-kachel:14px;--rand-seite:28px}}
 
+/* Akzent dieser App: Marineblau statt Markenrot (im Dunkeln heller, damit lesbar). Rot bleibt nur Warnung/„fest terminiert“. */
+:root{--marke:#1D3A6E;--primaer:var(--marke)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--marke:#6E9BEF;--auf-marke:#0B1730}}
+:root[data-theme="dark"]{--marke:#6E9BEF;--auf-marke:#0B1730}
 /* alte Namen dieser App → Apple-Tokens (auch für Stile direkt im HTML) */
 :root{--panel:var(--flaeche);--fg:var(--text);--muted:var(--leise);--line:var(--linie);--accent:var(--marke);--accent-fg:#fff;--ok:var(--txt-gruen);--warn:var(--txt-orange);--soft:var(--flaeche2)}
 *{box-sizing:border-box}
@@ -130,7 +134,7 @@ button.b,label.b{display:inline-flex;align-items:center;justify-content:center;g
   font-weight:500;font-size:var(--t-unter);color:var(--text);background:var(--glas);border:1px solid var(--glas-rand);
   -webkit-backdrop-filter:var(--linse,) var(--unschaerfe);backdrop-filter:var(--linse,) var(--unschaerfe);box-shadow:inset 0 1px 0 var(--glas-licht),0 1px 3px rgba(0,0,0,.08)}
 button.b:disabled{opacity:.45;cursor:default}
-button.p{background:var(--marke);border-color:transparent;color:#fff;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 14px color-mix(in srgb,var(--marke) 30%,transparent)}
+button.p{background:var(--marke);border-color:transparent;color:var(--auf-marke,#fff);font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 4px 14px color-mix(in srgb,var(--marke) 30%,transparent)}
 button.i{border:0;background:none;color:var(--leise);cursor:pointer;min-width:32px;min-height:32px;padding:4px 8px;border-radius:999px;font-size:15px}
 button.i:hover{background:var(--flaeche2);color:var(--text)}
 @media (prefers-reduced-motion:no-preference){
@@ -151,7 +155,7 @@ td.num,th.num{text-align:right}
 /* Kennzeichen (Abzeichen): zarte Fläche in Systemfarbe */
 .pill{display:inline-block;font-size:var(--t-klein);font-weight:600;padding:3px 9px;border-radius:99px;background:var(--grau-f);color:var(--grau-t);white-space:nowrap}
 p > .pill{white-space:normal;border-radius:12px;padding:7px 12px;line-height:1.35;font-size:var(--t-fuss)} /* lange Statusmeldungen brechen um statt über den Rand zu ragen */
-.pill.ok{background:var(--gruen-f);color:var(--gruen-t)} .pill.warn{background:var(--orange-f);color:var(--orange-t)} .pill.acc{background:var(--rot-f);color:var(--rot-t)}
+.pill.ok{background:var(--gruen-f);color:var(--gruen-t)} .pill.warn{background:var(--orange-f);color:var(--orange-t)} .pill.acc{background:color-mix(in srgb,var(--marke) 14%,transparent);color:var(--marke)}
 .pill.fest{background:var(--sys-rot);color:#fff;font-weight:700} tr.fest{background:var(--rot-f)} tr.fest>td:first-child{box-shadow:inset 4px 0 var(--sys-rot)}
 .pill.filterm{background:var(--sys-gruen);color:#fff;font-weight:700} tr.filterm{background:var(--gruen-f)} tr.filterm>td:first-child{box-shadow:inset 4px 0 var(--sys-gruen)}
 .sum{display:flex;gap:12px 20px;align-items:center;justify-content:flex-end;padding-top:14px;flex-wrap:wrap}
@@ -223,6 +227,20 @@ button.b.klein .ico{width:15px;height:15px}
 #kTab td.k-akt{text-align:right}
 #kTab details.preis summary{text-decoration:none;font-weight:600}
 .small{font-size:inherit}
+/* ===== Bewegung: Bereiche blenden ein, Karten nacheinander, Glas-Blase gleitet zum aktiven Reiter ===== */
+@media (prefers-reduced-motion:no-preference){
+  main > section:not([hidden]) > *{animation:einblenden .42s cubic-bezier(.2,.8,.2,1) both}
+  main > section:not([hidden]) > :nth-child(2){animation-delay:.05s}
+  main > section:not([hidden]) > :nth-child(3){animation-delay:.1s}
+  main > section:not([hidden]) > :nth-child(n+4){animation-delay:.14s}
+  .nav-linse{transition:transform .55s cubic-bezier(.25,1.25,.5,1),width .55s cubic-bezier(.25,1.25,.5,1)}
+  #tFz .b{transition:background-color .3s,color .3s,box-shadow .3s,transform .25s var(--feder)}
+}
+@keyframes einblenden{from{opacity:0;transform:translateY(10px)}}
+.nav-linse{position:absolute;top:3px;bottom:3px;left:0;border-radius:999px;pointer-events:none;z-index:0;
+  background:color-mix(in srgb,var(--text) 10%,transparent);box-shadow:inset 0 1px 0 var(--glas-licht),0 2px 8px rgba(0,0,0,.08)}
+nav.mit-linse button.on{background:transparent;box-shadow:none}
+nav button{position:relative;z-index:1}
 /* ===== Liquid Glass: Lichtkante, Glanz, Maus ===== */
 :is(nav,button.b,label.b,#toast,dialog)::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(var(--licht-winkel,140deg),rgba(255,255,255,.6),rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 55%,rgba(255,255,255,.2));
@@ -254,6 +272,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   nav{--unschaerfe:blur(7px) saturate(180%) brightness(1.05)!important;--glas:rgba(255,255,255,.66)!important} /* Tab-Leiste liegt über allem Inhalt: etwas dichter, damit Schrift darunter nicht stört */
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) nav{--glas:rgba(36,36,40,.66)!important}}
   nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px 6px;font-size:10.5px;font-weight:600;min-width:0;overflow-wrap:anywhere;text-align:center;line-height:1.15}
+  .nav-linse{top:4px;bottom:4px}
   nav button::before{content:"";width:24px;height:24px;background:currentColor;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
   nav button[data-tab=tour]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2'/%3E%3Cpath d='M15 18H9'/%3E%3Cpath d='M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3Ccircle cx='7' cy='18' r='2'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2'/%3E%3Cpath d='M15 18H9'/%3E%3Cpath d='M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14'/%3E%3Ccircle cx='17' cy='18' r='2'/%3E%3Ccircle cx='7' cy='18' r='2'/%3E%3C/svg%3E")}
   nav button[data-tab=kunden]::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Cpath d='M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Cpath d='M16 3.128a4 4 0 0 1 0 7.744'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3C/svg%3E")}
@@ -324,6 +343,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #aTab .a-akt .b{flex:1;white-space:normal}
   /* Kunden: jede Zeile eine ruhige Zelle; Markierungen (fest / Filiale) als getönte Karte mit Farbstreifen */
   #kTab tr{gap:4px 10px;padding:14px 4px}
+  #kunden .row > .b,#tour .row > .b{flex:1 1 calc(50% - 6px)} /* Knöpfe unter den Feldern füllen die Breite */
   #kTab .k-name{font-size:var(--t-kopf);flex:1 1 calc(100% - 160px)!important;min-width:0} /* Preis bleibt in der Namenszeile, auch in getönten Zeilen */
   #kTab .k-name b{font-weight:600}
   #kTab .k-dat,#kTab .k-zeit{font-size:var(--t-unter);color:var(--leise)}
@@ -372,7 +392,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
       <label style="flex:1;min-width:240px">Kunde aus Datenbank hinzufügen
         <input id="tSuche" list="kundenListe" placeholder="Name, Auftragsnr. oder Adresse tippen …"></label>
       <datalist id="kundenListe"></datalist>
-      <button class="b" id="tNeu">+ Neuer Kunde</button>
+      <button class="b" id="tNeu"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Neuer Kunde</button>
       <button class="b" id="tImport">Tabelle einfügen</button>
     </div>
     <div class="banner" id="tBanner"><span id="tBannerText"></span><button class="b p" id="tLaden">Alle in die Tour übernehmen</button></div>
@@ -416,7 +436,7 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
       </select></label>
       <label>Status<select id="kStatus"><option value="">alle</option></select></label>
       <label class="check"><input type="checkbox" id="kIntern"> nur intern</label>
-      <button class="b p" id="kNeu">+ Kunde anlegen</button>
+      <button class="b p" id="kNeu"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Kunde anlegen</button>
     </div>
   </div>
   <div class="card">
@@ -1183,8 +1203,16 @@ const startAdresse = (f = tourFiliale()) => S.settings.starts[f] || FILIALEN[f] 
 function fillFilialen(sel, val) { sel.innerHTML = Object.keys(FILIALEN).map(f => `<option${f === val ? ' selected' : ''}>${escH(f)}</option>`).join(''); }
 
 // ================= Tabs =================
+/** Glas-Blase unter dem aktiven Reiter: gleitet federnd hinüber (wie die Tab-Leiste von iOS). */
+function navLinse() {
+  const nav = document.querySelector('nav'), on = nav.querySelector('button.on'); if (!on || !on.offsetWidth) return;
+  let l = nav.querySelector('.nav-linse'); if (!l) { l = Object.assign(document.createElement('span'), { className: 'nav-linse' }); nav.prepend(l); nav.classList.add('mit-linse'); }
+  const r = on.getBoundingClientRect(), n = nav.getBoundingClientRect(); // genau statt auf ganze Pixel gerundet
+  l.style.width = `${r.width}px`; l.style.transform = `translateX(${r.left - n.left - nav.clientLeft}px)`;
+}
+addEventListener('resize', navLinse); requestAnimationFrame(navLinse);
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b)); navLinse();
   document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== b.dataset.tab);
   ({ tour: renderTour, kunden: renderKunden, archiv: renderArchiv, einst: renderEinst })[b.dataset.tab]();
 });
@@ -1233,7 +1261,7 @@ function extraKm(dist) {
 const FELDER = ['name', 'adresse', 'tel', 'auftrag', 'lieferdatum', 'zeit', 'etage', 'entsorgung', 'status', 'filiale', 'intern', 'fest', 'filTerm', 'notiz'];
 // abweichende Filiale eines Kunden ('' = Standard, also die Filiale der Tour)
 const abwFiliale = x => (x.filiale && x.filiale !== tourFiliale() ? x.filiale : '');
-const festPill = k => (k && k.fest ? ' <span class="pill fest">📌 FEST TERMINIERT</span>' : '') + (k && k.filTerm ? ' <span class="pill filterm">🏬 TERMINIERT DURCH FILIALE</span>' : '');
+const festPill = k => (k && k.fest ? ' <span class="pill fest">Fest terminiert</span>' : '') + (k && k.filTerm ? ' <span class="pill filterm">Terminiert durch Filiale</span>' : '');
 const filialPill = x => abwFiliale(x) ? ` <span class="pill warn" title="Ware kommt aus dieser Filiale">Filiale ${escH(x.filiale)}</span>` : '';
 const kundeById = id => S.kunden.find(k => k.id === id);
 function upsertKunde(d) {
@@ -1390,6 +1418,7 @@ const ICO = { // Liniensymbole (Lucide, ISC-Lizenz) statt Zeichen ▲▼✕➕�
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', neu: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
   stift: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
   muell: '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  lkw: '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   drucken: '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>' };
 const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
 function renderKunden() {
@@ -1776,7 +1805,7 @@ $('#rInfo').addEventListener('click', async e => {
 
 function renderTour() {
   const n = t => t.auftraege.length ? ` (${t.auftraege.length})` : '', andere = S.fz === 2 ? 1 : 2;
-  $('#tFz').innerHTML = [1, 2].map(f => `<button class="b${f === S.fz ? ' p' : ''}" data-fz="${f}">🚚 Fahrzeug ${f}${n(f === S.fz ? S.tour : S.tour2)}</button>`).join('');
+  $('#tFz').innerHTML = [1, 2].map(f => `<button class="b${f === S.fz ? ' p' : ''}" data-fz="${f}">${ico('lkw')}Fahrzeug ${f}${n(f === S.fz ? S.tour : S.tour2)}</button>`).join('');
   const plan = zeitplan() || {};
   $('#tDatum').value = T().datum; $('#tStart').value = startNr();
   fillFilialen($('#tFiliale'), tourFiliale()); $('#hFiliale').textContent = tourFiliale();
