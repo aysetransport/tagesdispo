@@ -183,6 +183,46 @@ details.preis div{margin-top:4px;text-align:right}
 body.nurKunden nav button:not([data-tab=kunden]),body.nurKunden #kTab tr>:last-child,body.nurKunden #dKundeTour,body.nurKunden #lFest{display:none}
 #kTab td.k-preis{white-space:nowrap}
 #kTab td.k-tel a{color:inherit}
+/* ===== Symbole, kleine Knöpfe ===== */
+.ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+button.i{display:inline-grid;place-items:center;width:32px;height:32px;min-width:0;min-height:0;padding:0}
+button.i.rot:hover{color:var(--sys-rot)}
+button.b.klein{min-height:30px;padding:0 12px;font-size:var(--t-fuss);gap:5px}
+button.b.klein .ico{width:15px;height:15px}
+/* ===== Tagestour (PC): Tabelle wie eine Tabellenkalkulation – kompakte Felder, alles in einer Zeile sichtbar ===== */
+#tTab{font-size:var(--t-unter)}
+#tTab td{padding:5px 3px}
+#tTab th{padding:8px 3px}
+#tTab td input:not([type=checkbox]),#tTab td select{min-height:32px;padding:5px 8px;font-size:var(--t-unter);border-radius:8px}
+#tTab input[type=time]{width:112px!important;padding-right:4px}
+#tTab .t-name{min-width:150px!important}
+#tTab .t-adr{min-width:200px!important}
+#tTab .t-auf{min-width:84px!important}
+#tTab .t-tel{min-width:112px!important}
+#tTab .t-et input,#tTab .t-ent input{width:48px!important}
+#tTab .t-km input{width:52px!important}
+#tTab .t-gp input{width:64px!important}
+#tTab .kmcell .pill{padding:2px 6px}
+/* Pfeile und Entfernen übereinander: spart zwei Knopfbreiten je Zeile */
+#tTab .t-move button,#tTab .t-rm button{display:grid;width:28px;height:28px}
+#tTab .t-name input{font-weight:600}
+#tTab .t-move,#tTab .t-rm{width:34px}
+#tTab tr.fest input:not([type=checkbox]),#tTab tr.filterm input:not([type=checkbox]){background:color-mix(in srgb,var(--flaeche) 72%,transparent)}
+#tTab .t-betrag{font-weight:700;font-size:var(--t-callout)}
+/* ===== Kunden (PC): Liste mit ruhigen Zeilen, einheitliche Schrift ===== */
+#kTab{font-size:var(--t-unter)}
+#kTab td{padding:10px 6px;vertical-align:top}
+#kTab td.k-dat,#kTab td.k-zeit{color:var(--leise);font-variant-numeric:tabular-nums;white-space:nowrap}
+#kTab td.k-name b{font-weight:600}
+#kTab td.k-name .pill{margin:4px 4px 0 0}
+#kTab td.k-tel a{color:var(--marke);text-decoration:none;white-space:nowrap}
+#kTab td.k-tel a:hover{text-decoration:underline}
+#kTab td.k-auf{color:var(--leise)}
+#kTab td.k-stat{white-space:nowrap}
+#kTab td.k-stat .b{margin-left:6px;vertical-align:middle}
+#kTab td.k-akt{text-align:right}
+#kTab details.preis summary{text-decoration:none;font-weight:600}
+.small{font-size:inherit}
 /* ===== Liquid Glass: Lichtkante, Glanz, Maus ===== */
 :is(nav,button.b,label.b,#toast,dialog)::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(var(--licht-winkel,140deg),rgba(255,255,255,.6),rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 55%,rgba(255,255,255,.2));
@@ -282,6 +322,26 @@ dialog::after{position:fixed;display:none} /* Sheets scrollen: Lichtkante würde
   #aTab .a-kunden{order:5;flex-basis:100%}
   #aTab .a-akt{order:6;flex-basis:100%;display:flex;gap:8px;white-space:normal!important}
   #aTab .a-akt .b{flex:1;white-space:normal}
+  /* Kunden: jede Zeile eine ruhige Zelle; Markierungen (fest / Filiale) als getönte Karte mit Farbstreifen */
+  #kTab tr{gap:4px 10px;padding:14px 4px}
+  #kTab .k-name{font-size:var(--t-kopf);flex:1 1 calc(100% - 160px)!important;min-width:0} /* Preis bleibt in der Namenszeile, auch in getönten Zeilen */
+  #kTab .k-name b{font-weight:600}
+  #kTab .k-dat,#kTab .k-zeit{font-size:var(--t-unter);color:var(--leise)}
+  #kTab .k-preis{font-size:var(--t-kopf)}
+  #kTab .k-adr{font-size:var(--t-unter)}
+  #kTab .k-tel,#kTab .k-auf,#kTab .k-et,#kTab .k-ent{font-size:var(--t-fuss)}
+  #kTab .k-stat{display:flex;align-items:center;gap:6px}
+  #kTab .k-akt{display:flex;justify-content:flex-end;gap:4px;margin-top:2px}
+  #kTab button.i{width:40px;height:40px;background:var(--flaeche2)}
+  #kTab tr.fest,#kTab tr.filterm,#tTab tr.fest,#tTab tr.filterm{border-radius:16px;padding-left:14px;padding-right:12px;margin:6px 0;border-bottom:0}
+  #kTab tr.fest,#tTab tr.fest{box-shadow:inset 4px 0 var(--sys-rot)} #kTab tr.filterm,#tTab tr.filterm{box-shadow:inset 4px 0 var(--sys-gruen)}
+  #kTab tr.fest>td:first-child,#kTab tr.filterm>td:first-child,#tTab tr.fest>td:first-child,#tTab tr.filterm>td:first-child{box-shadow:none}
+  /* Tagestour: Felder in Karten-Größe (16 px, damit das iPhone nicht hineinzoomt), Name über die ganze Breite */
+  #tTab td input:not([type=checkbox]),#tTab td select{min-height:40px;font-size:16px;padding:7px 10px}
+  #tTab .t-name{flex:1 1 0!important;min-width:0!important}
+  #tTab .t-adr{min-width:0!important}
+  #tTab input[type=time]{width:calc(50% - 3px)!important}
+  #tTab .t-move,#tTab .t-rm{width:auto;display:flex}
 }
 </style>
 </head>
@@ -1325,6 +1385,13 @@ async function kmNachrechnen() {
   } finally { kmLaeuft = false; }
 }
 let kOffen = new Set(); // aufgeklappte Preise bleiben beim Neuzeichnen offen
+const ICO = { // Liniensymbole (Lucide, ISC-Lizenz) statt Zeichen ▲▼✕➕✎🗑 – gleiche Strichstärke, Textfarbe
+  hoch: '<path d="m18 15-6-6-6 6"/>', runter: '<path d="m6 9 6 6 6-6"/>', tausch: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', neu: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>', plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  stift: '<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>',
+  muell: '<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  drucken: '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>' };
+const ico = n => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
 function renderKunden() {
   const list = kundenGefiltert(), MAX = 400;
   kOffen = new Set([...document.querySelectorAll('#kTab details.preis[open]')].map(d => d.dataset.id));
@@ -1335,9 +1402,9 @@ function renderKunden() {
     <td class="k-adr">${escH(k.adresse)}</td><td class="small k-tel">${k.tel ? `<a href="tel:${escH(k.tel.replace(/[^\d+]/g, ''))}">${escH(k.tel)}</a>` : ''}</td><td class="small k-auf">${escH(k.auftrag)}</td>
     <td class="num k-et">${k.etage || 0}</td><td class="num k-ent">${k.entsorgung || 0}</td>
     <td class="num k-preis">${preisZelle(k)}</td>
-    <td class="k-stat"><span class="pill">${escH(k.status)}</span>${GAS && !k.intern ? ` <button class="b" style="padding:2px 8px;font-size:12px" data-druck="${k.id}" title="Rechnung (2×) + Spediformular als PDF – vorhandene Rechnung mit gleicher Nummer, sonst nächste freie">🖨 Rechnung</button>` : ''}</td>
+    <td class="k-stat"><span class="pill">${escH(k.status)}</span>${GAS && !k.intern ? ` <button class="b klein" data-druck="${k.id}" title="Rechnung (2×) + Spediformular als PDF – vorhandene Rechnung mit gleicher Nummer, sonst nächste freie">${ico('drucken')}Rechnung</button>` : ''}</td>
     <td class="muted small k-notiz" style="max-width:260px">${escH(k.notiz)}</td>
-    <td class="k-akt" style="white-space:nowrap"><button class="i" title="Zur Tagestour hinzufügen" data-add="${k.id}">➕</button><button class="i" title="Bearbeiten" data-edit="${k.id}">✎</button><button class="i" title="Löschen" data-del="${k.id}">🗑</button></td></tr>`).join('');
+    <td class="k-akt" style="white-space:nowrap"><button class="i" title="Zur Tagestour hinzufügen" aria-label="Zur Tagestour hinzufügen" data-add="${k.id}">${ico('plus')}</button><button class="i" title="Bearbeiten" aria-label="Bearbeiten" data-edit="${k.id}">${ico('stift')}</button><button class="i rot" title="Löschen" aria-label="Löschen" data-del="${k.id}">${ico('muell')}</button></td></tr>`).join('');
   $('#kInfo').textContent = `${list.length} von ${S.kunden.length} Kunden` + (list.length > MAX ? ` – die ersten ${MAX} werden angezeigt, Suche oder Filter eingrenzen.` : '');
   fillDatalist();
   kmNachrechnen();
@@ -1373,7 +1440,7 @@ async function rechnungDrucken(k, btn) {
     toast(r.neu ? `Neue Rechnung Nr. ${r.start_nr} erstellt` : `Vorhandene Rechnung Nr. ${r.start_nr} erneut ausgegeben`, 6000);
     if (r.neu) { await serverLaden(); alles(); } // Archiv/letzte Nummer vom Server übernehmen
   } catch (e) { alert('Rechnung konnte nicht erstellt werden: ' + (e.message || e)); }
-  finally { btn.disabled = false; btn.textContent = '🖨 Rechnung'; }
+  finally { btn.disabled = false; btn.innerHTML = ico('drucken') + 'Rechnung'; }
 }
 const dlLabel = k => `${k.name} · ${k.adresse || ''}${k.lieferdatum ? ' · ' + isoToDe(k.lieferdatum) : ''}${k.auftrag ? ' · ' + k.auftrag : ''}`;
 function fillDatalist() { $('#kundenListe').innerHTML = S.kunden.map(k => `<option value="${escH(dlLabel(k))}">`).join(''); }
@@ -1723,7 +1790,7 @@ function renderTour() {
     else if (a._status === 'fehler') st = `<span class="pill warn" title="${escH(a._err)}">?</span>`;
     else if (a.dist != null) st = `<span class="pill ok" title="Fahrstrecke ab Filiale ${escH(tourFiliale())}">${a.dist.toFixed(1).replace('.', ',')} km</span>`;
     return `<tr data-i="${i}" class="${kundeById(a.kundeId)?.fest ? 'fest' : ''}${kundeById(a.kundeId)?.filTerm ? ' filterm' : ''}">
-      <td class="t-move" style="white-space:nowrap"><button class="i" data-up title="Nach oben">▲</button><button class="i" data-down title="Nach unten">▼</button></td>
+      <td class="t-move" style="white-space:nowrap"><button class="i" data-up title="Nach oben" aria-label="Nach oben">${ico('hoch')}</button><button class="i" data-down title="Nach unten" aria-label="Nach unten">${ico('runter')}</button></td>
       <td class="t-name" style="min-width:140px"><input data-f="name" value="${escH(a.name)}" aria-label="Name">${rnr}${festPill(kundeById(a.kundeId))}${abwFiliale(a) ? `<div style="font-size:11px">${filialPill(a)}</div>` : ''}</td>
       <td class="t-auf" data-l="Auftragsnr." style="min-width:100px"><input data-f="auftrag" value="${escH(a.auftrag)}"></td>
       <td class="t-adr" data-l="Adresse" style="min-width:220px"><input data-f="adresse" value="${escH(a.adresse)}"></td>
@@ -1732,12 +1799,12 @@ function renderTour() {
       <td class="t-ank" data-l="Ankunft" style="white-space:nowrap">${plan[a.id] ? `<span class="pill ${plan[a.id].spaet ? 'warn' : 'ok'}" title="${plan[a.id].spaet ? 'Außerhalb des Zeitfensters' : (plan[a.id].warten ? 'inkl. ' + plan[a.id].warten + ' Min. Wartezeit' : 'im Zeitfenster')}">${plan[a.id].ankunft}${plan[a.id].spaet ? ' ⚠' : ''}</span>${plan[a.id].vorschlag ? `<div style="font-size:11px;margin-top:3px" title="Kein festes Zeitfenster – Vorschlag aus der Routenplanung für die Avisierung">💡 ${plan[a.id].vorschlag} <button class="b" style="padding:1px 6px;font-size:11px" data-vorschlag="${escH(plan[a.id].vorschlag)}">übernehmen</button></div>` : ''}` : '<span class="muted">–</span>'}</td>
       <td class="t-et" data-l="Etage"><input type="number" min="0" data-f="etage" value="${a.etage}" style="width:56px"></td>
       <td class="t-ent" data-l="Entsorg."><input type="number" min="0" data-f="entsorgung" value="${a.entsorgung}" style="width:56px"></td>
-      <td class="t-km" data-l="Extra-km"><div class="kmcell"><input type="number" min="0" data-f="km" value="${a.km}" style="width:64px">${st}<button class="i" data-km title="Kilometer neu berechnen">↻</button></div></td>
+      <td class="t-km" data-l="Extra-km"><div class="kmcell"><input type="number" min="0" data-f="km" value="${a.km}" style="width:64px">${st}<button class="i" data-km title="Kilometer neu berechnen" aria-label="Kilometer neu berechnen">${ico('neu')}</button></div></td>
       <td class="t-gp" data-l="Sonderpreis"><input type="number" min="0" data-f="grundpreis" value="${a.grundpreis}" placeholder="${P().grund}" style="width:72px"></td>
       <td class="t-cb" data-l="Intern" style="text-align:center"><input type="checkbox" data-f="intern" ${a.intern ? 'checked' : ''}></td>
       <td class="t-cb" data-l="Offen" style="text-align:center"><input type="checkbox" data-f="offen" ${a.offen ? 'checked' : ''}></td>
       <td class="num tot t-betrag">${betrag}</td>
-      <td class="t-rm" style="white-space:nowrap"><button class="i" data-fzmove title="In Fahrzeug ${andere} verschieben">⇄</button><button class="i" data-rm title="Aus Tour entfernen">✕</button></td></tr>`;
+      <td class="t-rm" style="white-space:nowrap"><button class="i" data-fzmove title="In Fahrzeug ${andere} verschieben" aria-label="In Fahrzeug ${andere} verschieben">${ico('tausch')}</button><button class="i rot" data-rm title="Aus Tour entfernen" aria-label="Aus Tour entfernen">${ico('x')}</button></td></tr>`;
   }).join('');
   $('#tLeer').hidden = A.length > 0; $('#tTab').hidden = A.length === 0;
   routeInfo(plan);
