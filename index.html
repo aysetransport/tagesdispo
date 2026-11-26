@@ -1070,7 +1070,7 @@ function save() {
   S.geaendert = Date.now();
   try { localStorage.setItem(KEY, JSON.stringify(S)); }
   catch (e) { toast('Speichern im Browser fehlgeschlagen – bitte Sicherung herunterladen!'); }
-  if (GAS) { if (!SERVER.geladen) return; SERVER.pending = true; clearTimeout(SERVER.timer); SERVER.timer = setTimeout(serverSpeichern, 800); }
+  if (GAS) { SERVER.aenderung++; if (SERVER.geladen || SERVER.offline) merkeOffen(true); /* vor dem Start (z. B. Umstellung alter Daten) kein Vermerk */ if (!SERVER.geladen) return; SERVER.pending = true; clearTimeout(SERVER.timer); SERVER.timer = setTimeout(serverSpeichern, 800); }
   else if (DATEI.handle && DATEI.ok) { DATEI.pending = true; clearTimeout(DATEI.timer); DATEI.timer = setTimeout(schreibeDatei, 500); }
 }
 
@@ -1108,23 +1108,32 @@ function pinAbfragen(falsch) {
     d.showModal(); $('#pinInput').focus();
   });
 }
-const SERVER = { version: 0, timer: null, pending: false, busy: false, fehler: '' };
+const SERVER = { version: 0, timer: null, pending: false, busy: false, fehler: '', aenderung: 0 };
+// Vermerk im Browser: Änderungen, die noch nicht in Google Drive sind (überlebt Schließen und Neustart), und die
+// Server-Version, auf der sie beruhen. Beim nächsten Start werden sie zuerst gespeichert statt überschrieben.
+const OFFEN_KEY = 'tagesdispo-offen', VERSION_KEY = 'tagesdispo-version';
+function merkeOffen(an) { try { if (an) localStorage.setItem(OFFEN_KEY, '1'); else localStorage.removeItem(OFFEN_KEY); } catch {} }
+function merkeVersion(v) { SERVER.version = v; try { localStorage.setItem(VERSION_KEY, String(v)); } catch {} }
 async function serverSpeichern(force = false) {
   if (SERVER.busy) { clearTimeout(SERVER.timer); SERVER.timer = setTimeout(serverSpeichern, 800); return; }
   SERVER.busy = true;
+  const stand = SERVER.aenderung; // was danach geändert wird, geht mit dem nächsten Speichern raus
   try {
     const r = await gas('speichern', JSON.stringify(S), SERVER.version, force);
     if (r.konflikt) {
       if (confirm('Auf einem anderen Gerät wurde inzwischen gespeichert.\n\nOK = den neueren Stand laden (deine letzte Änderung hier geht verloren)\nAbbrechen = deinen Stand speichern und den anderen überschreiben')) {
-        apply(JSON.parse(r.json)); SERVER.version = r.version; SERVER.pending = false; alles();
+        apply(JSON.parse(r.json)); merkeVersion(r.version); SERVER.pending = false; merkeOffen(false); try { localStorage.setItem(KEY, r.json); } catch {} alles();
       } else { SERVER.busy = false; SERVER.version = r.version; return serverSpeichern(true); }
-    } else { SERVER.version = r.version; SERVER.pending = false; SERVER.fehler = ''; }
-  } catch (e) { SERVER.fehler = 'Speichern in Google Drive fehlgeschlagen: ' + (e.message || e); toast(SERVER.fehler, 6000); }
+    } else { merkeVersion(r.version); SERVER.pending = false; SERVER.fehler = ''; if (SERVER.aenderung === stand) merkeOffen(false); }
+  } catch (e) {
+    SERVER.fehler = 'Speichern in Google Drive fehlgeschlagen: ' + (e.message || e) + ' – neuer Versuch in 30 s'; toast(SERVER.fehler, 6000);
+    clearTimeout(SERVER.timer); SERVER.timer = setTimeout(serverSpeichern, 30000); // ohne neuen Versuch blieben die Änderungen nur im Browser
+  }
   finally { SERVER.busy = false; serverStatus(); }
 }
 async function serverLaden() {
   const r = await gas('laden');
-  SERVER.version = r.version; SERVER.geladen = true;
+  merkeVersion(r.version); SERVER.geladen = true;
   if (r.nurKunden) {
     NUR_KUNDEN = true; apply(JSON.parse(r.json));
     document.body.classList.add('nurKunden'); document.querySelector('nav button[data-tab=kunden]').click();
@@ -1132,6 +1141,21 @@ async function serverLaden() {
   }
   if (r.json) { apply(JSON.parse(r.json)); try { localStorage.setItem(KEY, r.json); } catch {} }
   else save(); // erste Nutzung: Startbestand (Notion) nach Drive schreiben
+}
+/** Start der Online-Version: Liegen noch ungespeicherte Änderungen im Browser, gehen sie zuerst nach Drive (bei einer
+ *  neueren Fassung dort fragt serverSpeichern nach) – sonst würde das Laden sie überschreiben. Ohne Netz: alle 30 s erneut. */
+async function serverStart() {
+  let offen = false; try { offen = !!localStorage.getItem(OFFEN_KEY); } catch {}
+  try {
+    if (offen) { SERVER.version = Number(localStorage.getItem(VERSION_KEY)) || 0; SERVER.geladen = true; SERVER.pending = true; await serverSpeichern(); }
+    else { await serverLaden(); alles(); }
+    if (!offen) SERVER.fehler = '';
+    SERVER.offline = false;
+  } catch (e) {
+    SERVER.offline = true; SERVER.fehler = 'Daten konnten nicht aus Google Drive geladen werden: ' + (e.message || e) + ' – Änderungen bleiben im Browser, neuer Versuch in 30 s';
+    setTimeout(serverStart, 30000);
+  }
+  serverStatus();
 }
 async function serverPruefen() {
   if (!GAS || !SERVER.geladen || SERVER.pending || SERVER.busy) return;
@@ -1210,8 +1234,7 @@ async function dateiStart() {
   if (GAS) {
     document.querySelectorAll('.nurLokal').forEach(el => el.hidden = true);
     if (!PIN) await pinAbfragen(false);
-    try { await serverLaden(); alles(); } catch (e) { alert('Daten konnten nicht aus Google Drive geladen werden: ' + (e.message || e)); }
-    serverStatus(); return;
+    await serverStart(); return;
   }
   if (!FS_OK) return dateiStatus();
   const h = await handleLaden(); if (!h) return dateiStatus();
